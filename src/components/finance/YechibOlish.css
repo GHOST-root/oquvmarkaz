@@ -1,0 +1,49 @@
+.border-left-blue {
+  border-left: 4px solid #1d8ff0;
+}
+
+.table tbody tr:hover {
+  background: #f6faff;
+}
+
+.btn-danger {
+  padding: 4px 10px !important;
+  border-radius: 50%;
+}
+
+.card {
+  border-radius: 10px;
+  
+}
+.card-graph {
+  max-width: 100%;
+  min-height: 100%;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+.card-filters {
+  max-width: 70%;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+.btn-x {
+  padding: 4px 10px !important;
+  border-radius: 50%;
+
+  border: none;
+  background-color: transparent;
+}
+.dawnloade {
+  font-size: 30px;
+  color:green;
+  cursor: pointer;
+}
+.ochirish{
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-left: 10px;
+}

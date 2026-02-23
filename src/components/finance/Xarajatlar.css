@@ -1,0 +1,152 @@
+/* Xarajatlar.css */
+.x-container {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.header-card {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.icon-box {
+  font-size: 35px;
+}
+
+.right-card {
+  position: sticky;
+  top: 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.filter-box {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.filter-btn {
+  background: #ff7a00;
+  color: #fff;
+  border: none;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 8px;
+}
+
+.filter-btn:hover {
+  background: #ff8f26;
+}
+
+.clear-btn {
+  width: 100px;
+  height: 38px;
+  margin-top: 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.tolov-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 12px;
+}
+
+.save-btn {
+  max-width: 100px;
+  background-color: #ffa45c;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.save-btn:hover {
+  background-color: #ff8f3d;
+}
+
+.delete-btn {
+  cursor: pointer;
+  color: red;
+  font-size: 20px;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.btn-end {
+  border: none;
+}
+
+.kok-chiziq {
+  border-top: 2px solid #000;
+}
+
+.jami-xarajatlar {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.top-filter-btn {
+  border-radius: 8px;
+  height: 38px;
+}
+
+/* Grafik kartlari uchun */
+.grafik-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.grafik-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.grafik-line {
+  width: 4px;
+  height: 20px;
+  background: #007bff;
+  border-radius: 2px;
+}
+
+.grafik-body {
+  height: 300px;
+  position: relative;
+}
+
+/* Jadval action ikonlari */
+.action-icon {
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+
+.action-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grafik-body {
+    height: 250px;
+  }
+  
+  .tolov-grid {
+    grid-template-columns: 1fr;
+  }
+}

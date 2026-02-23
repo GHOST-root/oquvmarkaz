@@ -1,0 +1,73 @@
+.ish-haqi-page {
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.section-header {
+  background: #f0f4f8;
+  font-weight: 600;
+}
+
+.step {
+  max-width: 1400px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05);
+}
+.nambevan {
+  font-size: 40px;
+}
+.ozgarmas {
+  margin-left: -24px;
+  color: #000;
+}
+.qoshishkok {
+  margin-top: 5px;
+  border-radius: 50px;
+}
+.step-number {
+  background: #3b82f6;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.step-text {
+  font-weight: 500;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 15px;
+}
+.actions-1 {
+  max-width: 200px;
+}
+.button001 {
+  min-width: 100px;
+  border-radius: 50px;
+}
+.dawnloade {
+  font-size: 30px;
+  color:green;
+  cursor: pointer;
+  margin-bottom: 20px;
+  margin-right: 20px;
+}
