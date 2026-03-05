@@ -13,15 +13,6 @@ const Jiringhisob = () => {
   return (
     <div style={containerStyle}>
       {/* 1. Litsenziya ogohlantirish paneli */}
-      <div style={topBarStyle}>
-        <div style={alertTextStyle}>
-          <span style={{ marginRight: '8px' }}>📋</span>
-          Litsenziyaning platformaga amal qilish muddati: 
-          <span style={{ color: '#faad14', fontWeight: '600', marginLeft: '5px' }}> 17.10.2025 - 23:59</span>
-          <span style={{ color: '#faad14', opacity: 0.8, marginLeft: '12px', fontSize: '11px' }}>1 kundan kam vaqt qoldi</span>
-        </div>
-        <button style={payButtonStyle}>To'lash</button>
-      </div>
 
       {/* 2. Sahifa sarlavhasi */}
       <h1 style={titleStyle}>Qo'ng'iroqlar jurnali</h1>

@@ -207,7 +207,7 @@ function Qarizdorlar() {
             className="  d-flex    align-items-center  flex-column "
           >
             <p> Yangi xodim qo'shish </p>
-            <Link to="/Search">
+            <Link to="../search" relative="path">
               <Button type="submit" variant="primary">
                 Qo'shish
               </Button>
@@ -221,7 +221,7 @@ function Qarizdorlar() {
             <h5 className="mb-0">Jami balans: {jamiBalans} so'm</h5>
           </Col>
           <Col md="auto">
-            <Link to={`./Inputsearch`}>
+            <Link to={`search`}>
               <FaCirclePlus size={24} />
             </Link>
           </Col>
@@ -235,7 +235,7 @@ function Qarizdorlar() {
           </Col>
 
           <Col md="auto">
-            <Link to={`./Inputsearch`}>
+            <Link to={`search`}>
               <FaCirclePlus size={24} />
             </Link>
           </Col>
@@ -393,7 +393,7 @@ function Qarizdorlar() {
           </tbody>
         </Table>
       </Card>
-      <Link to="/InputallReports">
+      <Link to="../InputallReports" relative="path">
         <Button variant="secondary" className="m-4">
           Hammasini kiritish
         </Button>

@@ -111,16 +111,7 @@ const Lidlarhisob = () => {
   return (
     <div className="report-main-container">
       {/* Yuqori panel */}
-      <div className="py-2 cr-notification d-flex justify-content-between mb-3 top-bar">
-        <p className="ps-3 license-info">
-          <i className="fa-regular fa-calendar"></i>{" "}
-          Litsenziya muddati:
-          <span className="text-danger"> 17.10.2025 - 23:59</span>
-        </p>
-        <button className="cr-exit-button rounded-5 me-3">
-          To'lash
-        </button>
-      </div>
+
 
       <div className="bg-white p-4">
         <h3 className="fw-normal">Lidlar hisobotlari</h3>
@@ -144,7 +135,7 @@ const Lidlarhisob = () => {
           </div>
 
           {/* O‘NG PANEL */}
-          {/* <div className="right-panel mt-4 pt-3">
+          <div className="right-panel pt-3">
             <div className="chart-box bar-chart-box oboyi">
               <Bar
                 ref={barRef}
@@ -159,7 +150,8 @@ const Lidlarhisob = () => {
                 Randomize
               </button>
             </div>
-          </div> */}
+          </div>
+
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ResponsiveFunnel } from '@nivo/funnel';
-
+import "./reports.css";
 // Yordamchi komponent: Sana inputini ikonka bilan o'rab chiqadi va ikkalasi ham bosilganda kalendarni ochadi
 const DateInputWithIcon = ({ date, setDate }) => {
     // Brauzer kalendarini ochish uchun input elementiga murojaat
@@ -162,8 +162,12 @@ const [activeStage, setActiveStage] = useState('toxtagan');
       <header className="cr-header">
         <div className="py-2 cr-notification d-flex justify-content-between">
           <p className="ps-3">
-            <i className="fa-regular fa-calendar"></i> Litefsianiyaning platformaga amal qilish muddati:
-            <span className="text-danger"> 17.10.2025 - 23:59 1 kundan kam vaqt qoldi</span>
+            <i className="fa-regular fa-calendar"></i> Litefsianiyaning
+            platformaga amal qilish muddati:
+            <span className="text-danger">
+              {" "}
+              17.10.2025 - 23:59 1 kundan kam vaqt qoldi
+            </span>
           </p>
           <button className="cr-exit-button rounded-5 me-3">To'lash</button>
         </div>
@@ -173,21 +177,15 @@ const [activeStage, setActiveStage] = useState('toxtagan');
 
       <div className="cr-filters">
         {/* Sana inputi 1: Yangi komponent ishlatilmoqda */}
-        <DateInputWithIcon 
-            date={startDate} 
-            setDate={setStartDate} 
-        />
+        <DateInputWithIcon date={startDate} setDate={setStartDate} />
 
         {/* Sana inputi 2: Yangi komponent ishlatilmoqda */}
-        <DateInputWithIcon 
-            date={endDate} 
-            setDate={setEndDate} 
-        />
+        <DateInputWithIcon date={endDate} setDate={setEndDate} />
 
         {/* Client source dropdown toggle */}
         <div className="cr-dropdown-container">
           <div
-            className="cr-select cr-dropdown-toggle cr-filter-control pb-1 fs-6 pe-5 ps-2 input-joyi" 
+            className="cr-select cr-dropdown-toggle cr-filter-control pb-1 fs-6 pe-5 ps-2 input-joyi"
             onClick={toggleClientSourceDropdown}
           >
             {selectedSource}
@@ -209,14 +207,14 @@ const [activeStage, setActiveStage] = useState('toxtagan');
         </div>
 
         {/* Xodimlar select elementi */}
-        <select className="cr-select cr-filter-control py-1 fs-6 pe-5 ps-2 input-joyi"> 
+        <select className="cr-select cr-filter-control py-1 fs-6 pe-5 ps-2 input-joyi">
           <option>Xodimlar tomonidan</option>
         </select>
 
         {/* Overall filter dropdown toggle */}
         <div className="cr-dropdown-container">
           <div
-            className="cr-select cr-dropdown-toggle cr-filter-control pb-1 fs-6 pe-5 input-joyi  ps-2  " 
+            className="cr-select cr-dropdown-toggle cr-filter-control pb-1 fs-6 pe-5 input-joyi  ps-2  "
             onClick={toggleOverallDropdown}
           >
             {selectedOverall}
@@ -228,7 +226,9 @@ const [activeStage, setActiveStage] = useState('toxtagan');
                 <div
                   key={option.id}
                   className={`cr-dropdown-item ${
-                    option.label === selectedOverall ? 'cr-dropdown-item-active' : ''
+                    option.label === selectedOverall
+                      ? "cr-dropdown-item-active"
+                      : ""
                   }`}
                   onClick={() => handleOverallSelect(option.label)}
                 >
@@ -240,11 +240,12 @@ const [activeStage, setActiveStage] = useState('toxtagan');
         </div>
 
         {/* Sozlamalar tugmasi (bu kichikroq bo'lishi mumkin) */}
-        <div className="cr-date-filter bg-white py-1 px-1 rounded-1 border px-2">⚙️</div>
+        <div className="cr-date-filter bg-white py-1 px-1 rounded-1 border px-2">
+          ⚙️
+        </div>
       </div>
 
- 
-<div className="cr-content-layout">
+      <div className="cr-content-layout">
         <section>
           <div className="cr-conversion-stats">
             <h2 className="px-4 pt-3">Konversiya</h2>
@@ -272,7 +273,10 @@ const [activeStage, setActiveStage] = useState('toxtagan');
                 <div className="cr-stat-item cr-total-label px-4">Jami</div>
 
                 {funnelStats.map((stat) => (
-                  <div className="cr-stat-item cr-count-cell pe-5 me-4" key={stat.id}>
+                  <div
+                    className="cr-stat-item cr-count-cell pe-5 me-4"
+                    key={stat.id}
+                  >
                     {stat.value}
                   </div>
                 ))}
@@ -282,29 +286,43 @@ const [activeStage, setActiveStage] = useState('toxtagan');
 
           <div className="cr-conversion-stats mt-3 px-4 pt-4">
             <div className="cr-table-placeholder">
-              <div className="menu-fio">
-                <span>FIO</span>
-                <span>Telefon</span>
-                <span>Holati</span>
-                <span>Xodim ismi</span>
-              </div>
+          
 
               {isPaidStageActive ? (
-                paidUsersData.map((user, index) => (
-                  <div className="cr-table-row" key={index}>
-                    <div className="cr-table-cell cr-fio">
-                      <p className="text-primary fw-bold">{user.fio}</p>
-                      <span className="cr-date">{user.date}</span>
-                    </div>
-                    <div className="cr-table-cell cr-phone">{user.phone}</div>
-                    <div className="cr-table-cell cr-status">{user.status}</div>
-                    <div className="cr-table-cell cr-employee">{user.employee}</div>
-                  </div>
-                ))
+                <table className="table table-bordered table-hover">
+                  <thead className="table-light">
+                    <tr>
+                      <th>FIO</th>
+                      <th>Telefon</th>
+                      <th>Holati</th>
+                      <th>Xodim ismi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paidUsersData.map((user, index) => (
+                      <tr key={index}>
+                        <td>
+                          <p className="text-primary fw-bold mb-0">
+                            {user.fio}
+                          </p>
+                          <small className="text-muted">{user.date}</small>
+                        </td>
+                        <td>{user.phone}</td>
+                        <td>
+                          <span className="badge bg-success">
+                            {user.status}
+                          </span>
+                        </td>
+                        <td>{user.employee}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               ) : (
-                <div className="cr-table-header">
-                  <p className="cr-table-message text-dark mb-5">
-                    Hisobotni koʻrish uchun yuqoridagi voronka bosqichlaridan birini tanlang.
+                <div className="text-center py-5">
+                  <p className="text-muted">
+                    Hisobotni ko‘rish uchun yuqoridagi voronka bosqichlaridan
+                    birini tanlang.
                   </p>
                 </div>
               )}

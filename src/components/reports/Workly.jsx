@@ -62,15 +62,6 @@ const Worklyhisob = () => {
  
   return (
     <div style={{ backgroundColor: '#f9fafb', minHeight: '100vh', padding: '24px', fontFamily: '"Inter", sans-serif' }}>
-      
-      <div style={topBarStyle}>
-        <div style={{ fontSize: '13px', color: '#4a5568' }}>
-          <span style={{ marginRight: '8px' }}>📋</span>
-          Litsenziyaning platformaga amal qilish muddati: 
-          <span style={{ color: '#e53e3e', fontWeight: '600', marginLeft: '5px' }}> 17.10.2025 - 23:59</span>
-        </div>
-        <button style={payButtonStyle}>To'lash</button>
-      </div>
 
       <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#1a202c', marginBottom: '20px' }}>Workly hisobotlari</h1>
 

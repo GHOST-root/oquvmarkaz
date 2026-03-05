@@ -19,10 +19,10 @@ function AppMoliya() {
         <Route path="InputallReports" element={<InputAllReports />} />
         <Route path="Qarizdorlar" element={<Qarizdorlar />} />
         <Route path="Xarajatlar" element={<Xarajatlar />} />
-        <Route path="Tolovlar" element={<Tolovlar />} />
+        {/* <Route path="Tolovlar" element={<Tolovlar />} /> */}
         <Route path="IshHaqi" element={<IshHaqi />} />
         <Route path="Student" element={<StudentDashboard />} />
-        <Route path="Search" element={<InputSearch />} />
+        <Route path="search" element={<InputSearch />} />
       </Routes>
     </div>
   );

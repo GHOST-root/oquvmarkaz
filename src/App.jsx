@@ -5,7 +5,7 @@ import MainLayout from "./layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Leads from "./pages/Leads";
 import Teachers from "./pages/Teachers";
-// import Students from "./pages/Students";
+import TalabalarPage from "./pages/Students";
 import Groups from "./pages/Groups";
 import Finance from "./pages/Finance";
 import Reports from "./pages/Reports";
@@ -13,10 +13,13 @@ import Courses from "./pages/Courses";
 import Staff from "./pages/Staff";
 import Settings from "./pages/Settings";
 
-//Outlets
-
-import XarajatToifalari from "./components/finance/XarajatToifalari";
+// Finance
 import Tolovlar from "./components/finance/Tolovlar";
+
+//Outlets
+import XarajatToifalari from "./components/finance/XarajatToifalari";
+import YechibOlish from "./components/finance/YechibOlish";
+import Qarizdorlar from "./components/finance/Qarizdorlar";
 // Reports
 import Darslar from "./components/reports/Darslar";
 import Konversiya from "./components/reports/Konversiya";
@@ -26,11 +29,22 @@ import Smshisob from "./components/reports/smslar";
 import Tarketganhisob from "./components/reports/tarkEtganlar";
 import Worklyhisob from "./components/reports/Workly";
 // Settings
-import Arxiv from "./components/settings/Arxiv";
+import Arxiv from "./components/settings/NewArxiv";
 import Holidays from "./components/settings/Holidays";
-import { LeftStudents } from "./components/settings/LeftStudents";
+import Leftgroup from "./components/settings/Leftgroup";
 import Profil from "./components/settings/Profil";
 import Rooms from "./components/settings/Rooms";
+
+import UmumiySozlamalar from "./components/settings/UmumiySozlamalar";
+
+// Students
+import Profile from "./components/students/Profile";
+
+// Bottom Bar
+import Blog from "./pages/News";
+
+// ichki qismlar
+import News from "./pages/NewsS";
 
 function App() {
   return (
@@ -39,13 +53,16 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/leads/*" element={<Leads />} />
         <Route path="/teachers/*" element={<Teachers />} />
-        {/* <Route path="/students" element={<Students />} /> */}
+        <Route path="/students/" element={<TalabalarPage />} />
+        <Route path="/students/:id" element={<Profile />} />
         <Route path="/groups/*" element={<Groups />} />
+
         <Route path="/finance/*" element={<Finance />}>
-          <Route path="XarajatToifalari" element={<XarajatToifalari />}>
-            <Route path="Tolovlar" element={<Tolovlar />} />
-          </Route>
+          <Route path="barchasi" element={<Tolovlar />} />
+          <Route path="withdraw" element={<YechibOlish />} />
+          <Route path="qarzdorlar" element={<Qarizdorlar />} />
         </Route>
+
         <Route path="/reports/*" element={<Reports />}>
           <Route path="darslar" element={<Darslar />} />
           <Route path="konversiya" element={<Konversiya />} />
@@ -60,10 +77,17 @@ function App() {
         <Route path="/settings/*" element={<Settings />}>
           <Route path="arxiv" element={<Arxiv />} />
           <Route path="bayram-kunlari" element={<Holidays />} />
-          <Route path="ketgan-oquvchilar" element={<LeftStudents />} />
+          <Route path="ketgan-oquvchilar" element={<Leftgroup />} />
           <Route path="profil" element={<Profil />} />
           <Route path="xonalar" element={<Rooms />} />
         </Route>
+
+          {/* Bottom Bar */}
+        <Route path="/blog/*" element={<Blog />} />
+
+          {/* ichki qismlar */}
+        <Route path="/news/*" element={<News />} />
+        
       </Routes>
     </MainLayout>
   );

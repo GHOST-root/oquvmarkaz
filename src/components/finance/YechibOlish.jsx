@@ -139,9 +139,9 @@ export default function YechibOlish() {
       </div>
 
       {/* TABLE */}
-      <Link to="XarajatToifalari">
+      {/* <Link to="XarajatToifalari">
         <button>XarajatToifalari</button>
-      </Link>
+      </Link> */}
       <div className="card p-3 shadow-sm">
         <table className="table table-hover align-middle">
           <thead>

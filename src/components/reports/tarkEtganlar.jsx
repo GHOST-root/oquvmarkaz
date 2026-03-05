@@ -83,15 +83,6 @@ const Tarketganhisob = () => {
 
   return (
     <div style={{ backgroundColor: '#f4f4f4', padding: '20px', minHeight: '100vh' }}>
-      
-      {/* Yuqori litsenziya paneli */}
-      <div className="py-2 cr-notification d-flex justify-content-between">
-          <p className="ps-3">
-            <i className="fa-regular fa-calendar"></i> Litefsianiyaning platformaga amal qilish muddati:
-            <span className="text-danger"> 17.10.2025 - 23:59 1 kundan kam vaqt qoldi</span>
-          </p>
-          <button className="cr-exit-button rounded-5 me-3">To'lash</button>
-        </div>
 
       {/* Sarlavha va Miqdor */}
       <div className="mb-4">

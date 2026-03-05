@@ -8,7 +8,15 @@ const menuItems = [
   { name: "Talabalar", path: "/students" },
   { name: "Guruhlar", path: "/groups" },
   { name: "O'qituvchilar", path: "/teachers" },
-  { name: "Moliya", path: "/finance" },
+  { name: "Moliya", path: "/finance",
+    children: [
+      { name: "BarchaTo'lovlar", path: "/finance/barchasi" },
+      { name: "YechibOlish", path: "/finance/withdraw" },
+      { name: "Xarajatlar", path: "/finance/xarajatlar" },
+      { name: "IshHaqi", path: "/finance/ishhaqi" },
+      { name: "Qarzdorlar", path: "/finance/qarzdorlar" },
+    ]
+   },
   {
     name: "Hisobotlar",
     path: "/reports",

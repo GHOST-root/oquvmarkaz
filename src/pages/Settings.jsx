@@ -6,7 +6,7 @@ function Settings() {
 		<>
 			<div className='app d-flex bg-light'>
 				<div className='content flex-grow-1 p-3'>
-
+						
 				</div>
 			</div>
             <Outlet />

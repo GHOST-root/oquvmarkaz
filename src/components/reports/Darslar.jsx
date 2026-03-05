@@ -97,17 +97,7 @@ const Darslar = () => {
 
   return (
     <div className="attendance-container">
-      <div className="py-2 cr-notification d-flex justify-content-between mb-4">
-        <p className="ps-3">
-          <i className="fa-regular fa-calendar"></i>{" "}
-          Litefsianiyaning platformaga amal qilish muddati:
-          <span className="text-danger">
-            {" "}
-            17.10.2025 - 23:59 1 kundan kam vaqt qoldi
-          </span>
-        </p>
-        <button className="cr-exit-button rounded-5 me-3">To'lash</button>
-      </div>
+   
 
       <div className="main-content">
         <div className="report-section">

@@ -197,17 +197,7 @@ useEffect(() => {
       {/* HEADER */}
          
       {/* Top Alert Banner */}
-      <div className="alert alert-warning d-flex justify-content-between align-items-center mb-4" style={{borderRadius: '8px'}}>
-        <div>
-          <i className="bi bi-exclamation-circle me-2"></i>
-          Litsenziyaning platformaga amal qilish muddati: <strong className="text-danger">17.10.2025 - 23:59</strong> 
-          <span className="ms-2">1 kundan kam vaqt qoldi!</span>
-        </div>
-        <button className="btn btn-warning btn-sm">To'lash</button>
-      </div>
-      <Link to="Student">
-<button>Student</button>
-      </Link>
+
       <h3 className="mb-3">Barcha to'lovlar</h3>
 
       <div className="row g-3">

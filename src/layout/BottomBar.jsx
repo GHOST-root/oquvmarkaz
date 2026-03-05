@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const bottomItems = [
   { name: "Dashboard", path: "/" },
-  { name: "Talabalar", path: "/students" },
+  { name: "Blog", path: "/blog" },
   { name: "Guruhlar", path: "/groups" },
   { name: "Moliya", path: "/finance" },
 ];

@@ -259,6 +259,9 @@ const TeachersPlatform = () => {
   };
 
   return (
+    <>
+    
+
     <div className="content-container">
       <div className="content">
         {/* --- ORTGA QAYTISH BUTTONI --- */}
@@ -553,7 +556,73 @@ const TeachersPlatform = () => {
 
       {/* --- O'NG DRAWER (Qo'shish va Tahrirlash) --- */}
 
-      {isDrawerOpen && (
+      
+
+      {/* --- SMS YUBORISH OYNASI (Avvalgi kabi) --- */}
+
+      {isSmsOpen && (
+        <>
+          <div className="overlay" onClick={() => setIsSmsOpen(false)}></div>
+
+          <div className="drawer right">
+            <div className="drawer-header">
+              <h3>O'qituvchiga SMS yuboring</h3>
+
+              <span className="close-x" onClick={() => setIsSmsOpen(false)}>
+                &times;
+              </span>
+            </div>
+
+            <div className="drawer-body">
+              <p>Yuboruvchi: MODME</p>
+
+              <textarea
+                rows="5"
+                placeholder="Xabarni kiriting"
+                className="sms-area"
+              ></textarea>
+
+              <div className="sms-info">0 ta belgi (~ 1 SMS)</div>
+
+              <button className="save-btn" onClick={handleSendSMS}>
+                SMS yuborish
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* --- O'CHIRISH MODALI (Avvalgi kabi) --- */}
+
+      {isDeleteModalOpen && (
+        <div className="modal-bg">
+          <div className="modal-box">
+            <h3>Ogohlantirish</h3>
+
+            <p>Rostdan ham shu o'qituvchini o'chirasizmi?</p>
+
+            <div className="modal-btns">
+              <button
+                className="btn-cancel"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Bekor qilish
+              </button>
+
+              <button className="btn-delete" onClick={handleDelete}>
+                O'chirish
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Xabar */}
+
+      {toastMessage && <div className="toast">{toastMessage}</div>}
+    </div>
+
+    {isDrawerOpen && (
         <>
           <div className="overlay" onClick={closeDrawer}></div>
 
@@ -733,69 +802,8 @@ const TeachersPlatform = () => {
         </>
       )}
 
-      {/* --- SMS YUBORISH OYNASI (Avvalgi kabi) --- */}
-
-      {isSmsOpen && (
-        <>
-          <div className="overlay" onClick={() => setIsSmsOpen(false)}></div>
-
-          <div className="drawer right">
-            <div className="drawer-header">
-              <h3>O'qituvchiga SMS yuboring</h3>
-
-              <span className="close-x" onClick={() => setIsSmsOpen(false)}>
-                &times;
-              </span>
-            </div>
-
-            <div className="drawer-body">
-              <p>Yuboruvchi: MODME</p>
-
-              <textarea
-                rows="5"
-                placeholder="Xabarni kiriting"
-                className="sms-area"
-              ></textarea>
-
-              <div className="sms-info">0 ta belgi (~ 1 SMS)</div>
-
-              <button className="save-btn" onClick={handleSendSMS}>
-                SMS yuborish
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* --- O'CHIRISH MODALI (Avvalgi kabi) --- */}
-
-      {isDeleteModalOpen && (
-        <div className="modal-bg">
-          <div className="modal-box">
-            <h3>Ogohlantirish</h3>
-
-            <p>Rostdan ham shu o'qituvchini o'chirasizmi?</p>
-
-            <div className="modal-btns">
-              <button
-                className="btn-cancel"
-                onClick={() => setIsDeleteModalOpen(false)}
-              >
-                Bekor qilish
-              </button>
-
-              <button className="btn-delete" onClick={handleDelete}>
-                O'chirish
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast Xabar */}
-
-      {toastMessage && <div className="toast">{toastMessage}</div>}
-    </div>
+      
+    </>
   );
 };
 
