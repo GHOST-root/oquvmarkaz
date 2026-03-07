@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import './reports.css'
+import './darslar.css'
 
 // =====================
 // Statistikani hisoblash
@@ -104,66 +105,64 @@ const Darslar = () => {
           <h1 className="report-title">Darsga kelish hisobotlari</h1>
 
           <div className="stats-grid d-flex flex-row justify-content-around">
-            {/* Chap statistika */}
-            <div className="stats-box d-flex flex-row justify-content-around">
-              <div className="col-8 stat-labels-wrapper">
-                {stats.mainStats.map((stat) => (
-                  <div
-                    key={stat.filterKey}
-                    className={`stat-item ${
-                      activeFilter === stat.filterKey ? "active" : ""
-                    }`}
-                    onClick={() => handleFilterClick(stat.filterKey)}
-                  >
-                    <span className="stat-label px-2 pt-1">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+           <div className="stats-table-wrap">
 
-              <div className="col-4 stat-counts-wrapper">
-                {stats.mainStats.map((stat) => (
-                  <div
-                    key={stat.filterKey}
-                    className={`stat-item stat-item-count ${
-                      activeFilter === stat.filterKey ? "active" : ""
-                    }`}
-                    onClick={() => handleFilterClick(stat.filterKey)}
-                  >
-                    <span className="stat-count px-2 pt-1">{stat.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              <table className="stats-table">
+                <tbody className="tablebody">
 
-            {/* O‘ng statistika */}
-            <div className="stats-box d-flex flex-row justify-content-around">
-              <div className="col-8 stat-labels-wrapper">
-                {stats.statusStats.map((stat) => (
-                  <div
-                    key={stat.filterKey}
-                    className={`stat-item ${
-                      activeFilter === stat.filterKey ? "active" : ""
-                    }`}
-                    onClick={() => handleFilterClick(stat.filterKey)}
-                  >
-                    <span className="stat-label px-2 pt-1">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+                  {stats.mainStats.map((left, i) => {
+                    const right = stats.statusStats[i];
 
-              <div className="col-4 stat-counts-wrapper">
-                {stats.statusStats.map((stat) => (
-                  <div
-                    key={stat.filterKey}
-                    className={`stat-item stat-item-count ${
-                      activeFilter === stat.filterKey ? "active" : ""
-                    }`}
-                    onClick={() => handleFilterClick(stat.filterKey)}
-                  >
-                    <span className="stat-count px-2 pt-1">{stat.count}</span>
-                  </div>
-                ))}
-              </div>
+                    return (
+                      <tr key={left.filterKey}>
+
+                        {/* Chap label */}
+                        <td
+                          className={`label ${
+                            activeFilter === left.filterKey ? "active" : ""
+                          }`}
+                          onClick={() => handleFilterClick(left.filterKey)}
+                        >
+                          {left.label}
+                        </td>
+
+                        {/* Chap count */}
+                        <td
+                          className={`count ${
+                            activeFilter === left.filterKey ? "active" : ""
+                          }`}
+                          onClick={() => handleFilterClick(left.filterKey)}
+                        >
+                          {left.count}
+                        </td>
+
+                        {/* O‘ng label */}
+                        <td
+                          className={`label ${
+                            activeFilter === right?.filterKey ? "active" : ""
+                          }`}
+                          onClick={() => handleFilterClick(right?.filterKey)}
+                        >
+                          {right?.label}
+                        </td>
+
+                        {/* O‘ng count */}
+                        <td
+                          className={`count ${
+                            activeFilter === right?.filterKey ? "active" : ""
+                          }`}
+                          onClick={() => handleFilterClick(right?.filterKey)}
+                        >
+                          {right?.count}
+                        </td>
+
+                      </tr>
+                    );
+                  })}
+
+                </tbody>
+              </table>
+
             </div>
           </div>
 

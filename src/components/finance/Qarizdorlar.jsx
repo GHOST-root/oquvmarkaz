@@ -10,6 +10,7 @@ import {
   Table,
 } from "react-bootstrap";
 import axios from "axios";  
+import './Qarzdorlar.css'
 import { FaCircle } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
 import { Link } from "react-router-dom";
@@ -242,105 +243,95 @@ function Qarizdorlar() {
         </Row>
       </Card>
 
-      <Form className="p-3 m-4 bg-white rounded" onSubmit={handleFilter}>
-        <Row className="g-3 align-items-end">
-          <Col md={2}>
-            <Form.Label>Ism yoki telefon</Form.Label>
-            <Form.Control
+      <form className="filter-form" onSubmit={handleFilter}>
+
+        <div className="filter-grid">
+
+          <div className="f-item">
+            <label>Ism yoki telefon</label>
+            <input
               type="text"
               placeholder="Ism yoki telefon"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </Col>
-          <Col md={2}>
-            <Form.Label>Guruh (tanlash)</Form.Label>
-            <Form.Select
+          </div>
+
+          <div className="f-item">
+            <label>Guruh (tanlash)</label>
+            <select
               value={groupSelect}
               onChange={(e) => setGroupSelect(e.target.value)}
             >
               <option value="">Barchasi</option>
               {uniqueGroups.map((g, i) => (
-                <option key={i} value={g}>
-                  {g}
-                </option>
+                <option key={i} value={g}>{g}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={2}>
-            <Form.Label>Holati</Form.Label>
-            <Form.Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
+            </select>
+          </div>
+
+          <div className="f-item">
+            <label>Holati</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">Barchasi</option>
               {uniqueStatuses.map((s, i) => (
-                <option key={i} value={s}>
-                  {s}
-                </option>
+                <option key={i} value={s}>{s}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={2}>
-            <Form.Label>Balans (tanlash)</Form.Label>
-            <Form.Select
+            </select>
+          </div>
+
+          <div className="f-item">
+            <label>Balans (tanlash)</label>
+            <select
               value={balansSelect}
               onChange={(e) => setBalansSelect(e.target.value)}
             >
               <option value="">Barchasi</option>
               {uniqueBalans.map((b, i) => (
-                <option key={i} value={b}>
-                  {b}
-                </option>
+                <option key={i} value={b}>{b}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={2}>
-            <Form.Label>Davr bo'yicha jami (tanlash)</Form.Label>
-            <Form.Select
+            </select>
+          </div>
+
+          <div className="f-item">
+            <label>Davr bo'yicha jami (tanlash)</label>
+            <select
               value={davrSelect}
               onChange={(e) => setDavrSelect(e.target.value)}
             >
               <option value="">Barchasi</option>
               {uniqueDavr.map((d, i) => (
-                <option key={i} value={d}>
-                  {d}
-                </option>
+                <option key={i} value={d}>{d}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={2}>
-            <Form.Label>Boshlanish sana</Form.Label>
-            <Form.Control
+            </select>
+          </div>
+
+          <div className="f-item">
+            <label>Boshlanish sana</label>
+            <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
             />
-          </Col>
-        </Row>
-        <Row className="g-3 align-items-end mt-2">
-          <Col md={2}>
-            <Form.Label>Tugash sana</Form.Label>
-            <Form.Control
+          </div>
+
+          <div className="f-item">
+            <label>Tugash sana</label>
+            <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
             />
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col md={1} className="d-grid">
-            <Button variant="warning" type="submit">
-              Filter
-            </Button>
-          </Col>
-          <Col md={1} className="d-grid">
-            <Button onClick={onClear} variant="outline-secondary" type="button">
-              Tozalash
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+          </div>
+
+        </div>
+
+        <div className="filter-actions">
+          <button className="btn-orange" type="submit">Filter</button>
+          <button className="btn-light" type="button" onClick={onClear}>Tozalash</button>
+        </div>
+
+      </form>
 
       <Card className="m-4 p-2">
         <Table striped hover responsive>

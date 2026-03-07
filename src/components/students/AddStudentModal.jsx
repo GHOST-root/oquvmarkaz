@@ -113,7 +113,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
             
             {/* YANGILANGAN TELEFON INPUTI */}
             <div className="form-control d-flex align-items-center p-0 overflow-hidden">
-              <span className="bg-light text-muted px-3 py-2 border-end" style={{ userSelect: 'none' }}>
+              <span className="bg-light countrycode text-muted px-1 py-1 border-end" style={{ userSelect: 'none' }}>
                 +998
               </span>
               <input 

@@ -85,3 +85,7 @@ textarea.form-control { resize: vertical; min-height: 90px; font-family: inherit
 .save-btn { background-color: #F8B07E; color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s; }
 .save-btn:hover { background-color: #F27A21; }
 .save-btn:disabled { background-color: #fce1d1; cursor: not-allowed; }
+
+.countrycode{
+  width: 70px;
+}

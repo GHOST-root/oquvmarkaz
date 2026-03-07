@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import '../components/students/students.css';
+import '../styles/Students.css'
 import AddStudentModal from '../components/students/AddStudentModal';
 import EditStudentModal from '../components/students/EditStudentModal';
 import PaymentModal from '../components/students/PaymentModal';
@@ -24,10 +25,11 @@ const Students = () => {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
 
-  // --- Filtrlar holati ---
+  // --- Filtrlar va Saralash (Sorting) holati ---
   const [filters, setFilters] = useState({
     search: '', course: '', status: '', finance: '', tag: '', extraId: '', startDate: '', endDate: ''
   });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' }); // YANGI
 
   const [toast, setToast] = useState({ show: false, message: "" });
   const navigate = useNavigate();
@@ -69,33 +71,53 @@ const Students = () => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const filteredStudents = studentsData.filter(student => {
-    // 1. Asosiy Qidiruv (Ism yoki telefon)
-    const matchesSearch = student.name.toLowerCase().includes(filters.search.toLowerCase()) || student.phone.includes(filters.search);
-    
-    // 2.1. Kurslar
-    const matchesCourse = filters.course ? student.groups.includes(filters.course) : true;
-    
-    // 2.2. Talaba Holati
-    const matchesStatus = filters.status ? student.status === filters.status : true;
-    
-    // 2.3. Moliyaviy Holat
-    let matchesFinance = true;
-    if (filters.finance === 'Qarzdor') matchesFinance = student.balance < 0;
-    if (filters.finance === 'To‘lov amalga oshirilgan') matchesFinance = student.balance >= 0;
-    
-    // 2.5. Qo'shimcha ID
-    const matchesExtraId = filters.extraId ? student.id.toString().includes(filters.extraId) : true;
-    
-    // 2.6. Sana bo'yicha (Hozircha statik text orqali tekshiramiz)
-    const matchesDate = filters.startDate ? student.date.includes(filters.startDate.split('-').reverse().join('.')) : true;
+  const filteredStudents = useMemo(() => {
+    return studentsData.filter(student => {
+      const matchesSearch = student.name.toLowerCase().includes(filters.search.toLowerCase()) || student.phone.includes(filters.search);
+      const matchesCourse = filters.course ? student.groups.includes(filters.course) : true;
+      const matchesStatus = filters.status ? student.status === filters.status : true;
+      
+      let matchesFinance = true;
+      if (filters.finance === 'Qarzdor') matchesFinance = student.balance < 0;
+      if (filters.finance === 'To‘lov amalga oshirilgan') matchesFinance = student.balance >= 0;
+      
+      const matchesExtraId = filters.extraId ? student.id.toString().includes(filters.extraId) : true;
+      const matchesDate = filters.startDate ? student.date.includes(filters.startDate.split('-').reverse().join('.')) : true;
 
-    return matchesSearch && matchesCourse && matchesStatus && matchesFinance && matchesExtraId && matchesDate;
-  });
+      return matchesSearch && matchesCourse && matchesStatus && matchesFinance && matchesExtraId && matchesDate;
+    });
+  }, [studentsData, filters]);
+
+  // ================= SARALASH (SORTING) MANTIQI =================
+  const sortedStudents = useMemo(() => {
+    let sortableItems = [...filteredStudents];
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        let aVal = a[sortConfig.key] ?? '';
+        let bVal = b[sortConfig.key] ?? '';
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredStudents, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return "fa-solid fa-sort ms-1 text-muted opacity-25";
+    return sortConfig.direction === 'asc' ? "fa-solid fa-sort-up ms-1 text-primary" : "fa-solid fa-sort-down ms-1 text-primary";
+  };
 
   // ================= HARAKATLAR =================
   const toggleSelectAll = (e) => {
-    if (e.target.checked) setSelectedStudents(filteredStudents.map(s => s.id));
+    if (e.target.checked) setSelectedStudents(sortedStudents.map(s => s.id));
     else setSelectedStudents([]);
   };
 
@@ -167,16 +189,14 @@ const Students = () => {
     setDeleteModal({ isOpen: false, student: null }); showToast("Talaba o'chirildi!");
   };
 
-  // --- Excel Yuklash ---
   // --- EXCEL (.xlsx) YUKLAB OLISH ---
   const exportToExcel = () => {
-    if (filteredStudents.length === 0) {
+    if (sortedStudents.length === 0) {
       alert("Yuklab olish uchun talabalar yo'q!");
       return;
     }
 
-    // 1. Jadval uchun ma'lumotlarni tayyorlash (Siz so'ragan ketma-ketlikda)
-    const excelData = filteredStudents.map((student, index) => ({
+    const excelData = sortedStudents.map((student, index) => ({
       "№": index + 1,
       "Ism va Familiya": student.name,
       "Telefon raqami": student.phone,
@@ -184,17 +204,12 @@ const Students = () => {
       "Guruh nomi": student.groups,
       "Moliyaviy holati (Balans)": student.balance + " UZS",
       "Teglar": student.note || "Yo'q", 
-      "Yaratilgan sana": student.date.split('—')[0].trim() // Sanani tozalab olish
+      "Yaratilgan sana": student.date.split('—')[0].trim()
     }));
 
-    // 2. Ma'lumotlardan yangi Excel varag'i (worksheet) yaratish
     const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    // 3. Yangi Excel kitobi (workbook) yaratish va varaqni qo'shish
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Talabalar ro'yxati");
-
-    // 4. Faylni yuklab olishga berish (.xlsx formatida)
     XLSX.writeFile(workbook, "Talabalar_Royxati.xlsx");
     
     showToast("Excel fayli muvaffaqiyatli yuklab olindi!");
@@ -213,61 +228,67 @@ const Students = () => {
       <div className="page-header">
         <div className="title-section">
           <h1>Talabalar</h1>
-          <span>Miqdor — {filteredStudents.length}</span>
+          <span>Miqdor — {sortedStudents.length}</span>
         </div>
         <button className="btn-add" onClick={() => setIsAddModalOpen(true)}>
           Yangisini qo'shish
         </button>
       </div>
 
-      {/* 1 & 2. FILTRLAR (Responsive Bootstrap Grid) */}
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-3">
-          <input type="text" className="form-control" placeholder="Ism yoki telefon orqali qidirish" name="search" value={filters.search} onChange={handleFilterChange} style={{ fontSize: '13px' }}/>
-        </div>
-        
-        <div className="col-6 col-md-2">
-          <select className="form-select" name="course" value={filters.course} onChange={handleFilterChange} style={{ fontSize: '13px' }}>
-            <option value="">Kurslar</option>
-            <option value="Kimyo">Kimyo</option>
-            <option value="Dizayn">Dizayn</option>
-            <option value="Intensive">Intensive</option>
-          </select>
-        </div>
+      {/* 1 & 2. FILTRLAR */}
+      <div className="filter-grid-2">
 
-        <div className="col-6 col-md-2">
-          <select className="form-select" name="status" value={filters.status} onChange={handleFilterChange} style={{ fontSize: '13px' }}>
-            <option value="">Talaba holati</option>
-            <option value="Faol">Aktiv (Faol)</option>
-            <option value="Sinov darsida">Sinov darsida</option>
-            <option value="Muzlatilgan">Muzlatilgan</option>
-            <option value="Arxivlangan">Arxivlangan</option>
-            <option value="Guruhlarga biriktirilmagan">Guruhsiz</option>
-          </select>
-        </div>
+        <input
+          type="text"
+          placeholder="Ism yoki telefon orqali qidirish"
+          name="search"
+          value={filters.search}
+          onChange={handleFilterChange}
+          className="wide"
+        />
 
-        <div className="col-6 col-md-2">
-          <select className="form-select" name="finance" value={filters.finance} onChange={handleFilterChange} style={{ fontSize: '13px' }}>
-            <option value="">Moliyaviy holati</option>
-            <option value="Qarzdor">Qarzdor</option>
-            <option value="To‘lov amalga oshirilgan">To‘lov amalga oshirilgan</option>
-          </select>
-        </div>
+        <select name="course" value={filters.course} onChange={handleFilterChange}>
+          <option value="">Kurslar</option>
+          <option value="Kimyo">Kimyo</option>
+          <option value="Dizayn">Dizayn</option>
+          <option value="Intensive">Intensive</option>
+        </select>
 
-        <div className="col-6 col-md-1">
-          <select className="form-select" name="tag" value={filters.tag} onChange={handleFilterChange} style={{ fontSize: '13px' }}>
-            <option value="">Teglar</option>
-            <option value="Yangi">Yangi</option>
-          </select>
-        </div>
+        <select name="status" value={filters.status} onChange={handleFilterChange}>
+          <option value="">Talaba holati</option>
+          <option value="Faol">Aktiv (Faol)</option>
+          <option value="Sinov darsida">Sinov darsida</option>
+          <option value="Muzlatilgan">Muzlatilgan</option>
+          <option value="Arxivlangan">Arxivlangan</option>
+          <option value="Guruhlarga biriktirilmagan">Guruhsiz</option>
+        </select>
 
-        <div className="col-6 col-md-1">
-          <input type="text" className="form-control" placeholder="ID" name="extraId" value={filters.extraId} onChange={handleFilterChange} style={{ fontSize: '13px' }}/>
-        </div>
+        <select name="finance" value={filters.finance} onChange={handleFilterChange}>
+          <option value="">Moliyaviy holati</option>
+          <option value="Qarzdor">Qarzdor</option>
+          <option value="To‘lov amalga oshirilgan">To‘lov amalga oshirilgan</option>
+        </select>
 
-        <div className="col-6 col-md-1">
-          <input type="date" className="form-control" name="startDate" value={filters.startDate} onChange={handleFilterChange} style={{ fontSize: '13px', color: '#888' }} title="Yaratilgan sana"/>
-        </div>
+        <select name="tag" value={filters.tag} onChange={handleFilterChange}>
+          <option value="">Teglar</option>
+          <option value="Yangi">Yangi</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="ID"
+          name="extraId"
+          value={filters.extraId}
+          onChange={handleFilterChange}
+        />
+
+        <input
+          type="date"
+          name="startDate"
+          value={filters.startDate}
+          onChange={handleFilterChange}
+        />
+
       </div>
 
       <div className="table-actions">
@@ -282,21 +303,36 @@ const Students = () => {
               <th style={{ width: '3%' }}>
                 <input 
                   type="checkbox" 
-                  checked={filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length}
+                  checked={sortedStudents.length > 0 && selectedStudents.length === sortedStudents.length}
                   onChange={toggleSelectAll}
                 />
               </th>
               <th style={{ width: '5%' }}>Foto</th>
-              <th style={{ width: '15%' }}>Ism <i className="fa-solid fa-arrow-down-a-z text-gray"></i></th>
-              <th style={{ width: '10%' }}>Telefon</th>
-              <th style={{ width: '18%' }}>Guruhlar</th>
-              <th style={{ width: '12%' }}>O'qituvchilar</th>
-              <th style={{ width: '12%' }}>Mashg'ulotlar</th>
-              <th style={{ width: '10%' }}>Balans</th>
-              <th style={{ width: '5%' }}>Coins</th>
-              <th style={{ width: '8%' }}>Izoh</th>
+              <th style={{ width: '15%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('name')}>
+                Ism <i className={getSortIcon('name')}></i>
+              </th>
+              <th style={{ width: '10%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('phone')}>
+                Telefon <i className={getSortIcon('phone')}></i>
+              </th>
+              <th style={{ width: '18%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('groups')}>
+                Guruhlar <i className={getSortIcon('groups')}></i>
+              </th>
+              <th style={{ width: '12%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('teacher')}>
+                O'qituvchilar <i className={getSortIcon('teacher')}></i>
+              </th>
+              <th style={{ width: '12%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('date')}>
+                Mashg'ulotlar <i className={getSortIcon('date')}></i>
+              </th>
+              <th style={{ width: '10%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('balance')}>
+                Balans <i className={getSortIcon('balance')}></i>
+              </th>
+              <th style={{ width: '5%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('coins')}>
+                Coins <i className={getSortIcon('coins')}></i>
+              </th>
+              <th style={{ width: '8%', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('note')}>
+                Izoh <i className={getSortIcon('note')}></i>
+              </th>
               <th style={{ width: '2%' }}>
-                
                 {/* Ommaviy harakatlar ikonkalari */}
                 <div className="table-head-icons d-flex justify-content-end gap-3">
                   <i className="fa-regular fa-folder" title="Guruhga qo'shish"
@@ -312,12 +348,11 @@ const Students = () => {
                      onClick={() => selectedStudents.length > 0 ? confirmBulkDelete() : null}>
                   </i>
                 </div>
-
               </th>
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.length > 0 ? filteredStudents.map((student, index) => (
+            {sortedStudents.length > 0 ? sortedStudents.map((student, index) => (
               <tr key={student.id} onClick={() => navigate(`/students/${student.id}`)} style={{ cursor: "pointer" }}>
                 <td className="text-gray" onClick={(e) => e.stopPropagation()}>
                   {index + 1}. <input type="checkbox" style={{marginLeft: '8px', cursor: 'pointer'}} checked={selectedStudents.includes(student.id)} onChange={() => toggleSelectStudent(student.id)} />

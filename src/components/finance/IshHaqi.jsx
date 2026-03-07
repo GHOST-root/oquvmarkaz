@@ -163,35 +163,36 @@ const IshHaqi = () => {
             </h5>
           </div>
 
-          <Row className="align-items-center mt-3">
-            <Col md={4}>
-              <Form.Label>Xarajat qiymati</Form.Label>
-              <Form.Control
+          <div className="xarajat-row">
+
+            <div className="f-item grow">
+              <label>Xarajat qiymati</label>
+              <input
                 placeholder="0"
                 value={xarajatQiymati}
                 onChange={(e) => handleXarajatChange(e, setXarajatQiymati)}
               />
-            </Col>
-            <Col md={1} className="mt-2 ozgarmas">
-              <Form.Select
-                className="mt-4"
+            </div>
+
+            <div className="f-item small">
+              <label>&nbsp;</label>
+              <select
                 value={xarajatTuri}
                 onChange={(e) => setXarajatTuri(e.target.value)}
               >
                 <option>O'zgarmas</option>
                 <option>Foiz</option>
-              </Form.Select>
-            </Col>
-            <Col md={2} className="mt-4">
-              <Button
-                variant="outline-primary"
-                className="qoshishkok"
-                onClick={() => handleAddRow(true)}
-              >
+              </select>
+            </div>
+
+            <div className="f-item btn-wrap">
+              <label>&nbsp;</label>
+              <button className="btn-outline" onClick={() => handleAddRow(true)}>
                 Qo'shish
-              </Button>
-            </Col>
-          </Row>
+              </button>
+            </div>
+
+          </div>
 
           <div className="step mt-3">
             <h5 className="step-text d-flex justify-content-center align-items-center">
@@ -201,78 +202,74 @@ const IshHaqi = () => {
             </h5>
           </div>
 
-          <Row className="mt-3">
-            <Col md={2}>
-              <Form.Label>Hisoblash usuli</Form.Label>
-              <Form.Select
-                value={hisobUsuli}
-                onChange={(e) => setHisobUsuli(e.target.value)}
-              >
-                <option value="">Select option</option>
-                <option value="Soatlik">Soatlik</option>
-                <option value="Oylik">Oylik</option>
-                <option value="Filial">Filial</option>
-                <option value="Talaba">Talaba</option>
-              </Form.Select>
-            </Col>
+        <div className="hisob-row">
 
-            {hisobUsuli === "Talaba" && (
-              <>
-                <Col md={2}>
-                  <Form.Label>Talaba</Form.Label>
-                  <Form.Select
-                    value={talaba}
-                    onChange={(e) => setTalaba(e.target.value)}
-                  >
-                    <option value="">Select option</option>
-                    <option value="Faxriddin">Faxriddin</option>
-                    <option value="Ali">Ali</option>
-                    <option value="Vali">Vali</option>
-                  </Form.Select>
-                </Col>
-                <Col md={2}>
-                  <Form.Label>Guruh</Form.Label>
-                  <Form.Select
-                    value={guruh}
-                    onChange={(e) => setGuruh(e.target.value)}
-                  >
-                    <option value="">Select option</option>
-                    <option value="FrontEnd">FrontEnd</option>
-                    <option value="BackEnd">BackEnd</option>
-                    <option value="Mobile">Mobile</option>
-                  </Form.Select>
-                </Col>
-              </>
-            )}
+          <div className="f-item small">
+            <label>Hisoblash usuli</label>
+            <select
+              value={hisobUsuli}
+              onChange={(e) => setHisobUsuli(e.target.value)}
+            >
+              <option value="">Select option</option>
+              <option value="Soatlik">Soatlik</option>
+              <option value="Oylik">Oylik</option>
+              <option value="Filial">Filial</option>
+              <option value="Talaba">Talaba</option>
+            </select>
+          </div>
 
-            <Col md={hisobUsuli === "Talaba" ? 3 : 3}>
-              <Form.Label>Xarajat qiymati</Form.Label>
-              <Form.Control
-                placeholder="0"
-                value={xarajatQiymati2}
-                onChange={(e) => handleXarajatChange(e, setXarajatQiymati2)}
-              />
-            </Col>
-            <Col md={1} className="mt-2">
-              <Form.Select
-                className="mt-4 ozgarmas"
-                value={xarajatTuri2}
-                onChange={(e) => setXarajatTuri2(e.target.value)}
-              >
-                <option>O'zgarmas</option>
-                <option>Foiz</option>
-              </Form.Select>
-            </Col>
-            <Col md={2} className="mt-4">
-              <Button
-                variant="outline-primary"
-                className="qoshishkok"
-                onClick={() => handleAddRow(false)}
-              >
-                Qo'shish
-              </Button>
-            </Col>
-          </Row>
+          {hisobUsuli === "Talaba" && (
+            <>
+              <div className="f-item small">
+                <label>Talaba</label>
+                <select value={talaba} onChange={(e) => setTalaba(e.target.value)}>
+                  <option value="">Select option</option>
+                  <option value="Faxriddin">Faxriddin</option>
+                  <option value="Ali">Ali</option>
+                  <option value="Vali">Vali</option>
+                </select>
+              </div>
+
+              <div className="f-item small">
+                <label>Guruh</label>
+                <select value={guruh} onChange={(e) => setGuruh(e.target.value)}>
+                  <option value="">Select option</option>
+                  <option value="FrontEnd">FrontEnd</option>
+                  <option value="BackEnd">BackEnd</option>
+                  <option value="Mobile">Mobile</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div className="f-item grow">
+            <label>Xarajat qiymati</label>
+            <input
+              placeholder="0"
+              value={xarajatQiymati2}
+              onChange={(e) => handleXarajatChange(e, setXarajatQiymati2)}
+            />
+          </div>
+
+          <div className="f-item xs">
+            <label>&nbsp;</label>
+            <select
+              value={xarajatTuri2}
+              onChange={(e) => setXarajatTuri2(e.target.value)}
+            >
+              <option>O'zgarmas</option>
+              <option>Foiz</option>
+            </select>
+          </div>
+
+          <div className="f-item btn-wrap">
+            <label>&nbsp;</label>
+            <button className="btn-outline" onClick={() => handleAddRow(false)}>
+              Qo'shish
+            </button>
+          </div>
+
+        </div>
 
           <div className="table-wrapper mt-4">
             <Table bordered hover size="sm">

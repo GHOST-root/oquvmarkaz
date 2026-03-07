@@ -2,12 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import "./Group.css";
 import GroupItem from "./Group-item.jsx";
 
-
-// NOTE: kept as two files only (Group.jsx + Group-item.jsx).
-// Group.jsx holds the groups list and passes the selected group to Group-item.jsx.
-// It also receives notifications from Group-item.jsx (updateGroupStudentCount, updateGroup).
-
-
 const initialGroups = [
   {
     id: 1,
@@ -20,7 +14,7 @@ const initialGroups = [
     end: "2026-01-17",
     duration: "0 oy / 0 hafta",
     room: "Room #1",
-    students: 3,
+    students: 3,    
     status: "faol",
   },
   {
@@ -39,17 +33,15 @@ const initialGroups = [
   },
 ];
 
-// LocalStorage keys (keep in sync with Group-item.jsx)
 const LS_GROUPS = "om_groups_restored";
 const LS_STUDENTS = "om_students_restored";
 
-/* ---------- Small Date helper popup (opens under date inputs) ---------- */
 function DatePopup({ anchorRef, value, onChange, onClose }) {
   if (!anchorRef?.current) return null;
   const rect = anchorRef.current.getBoundingClientRect();
   const style = {
     position: "fixed",
-    left: rect.left,
+    left: Math.max(10, Math.min(rect.left, window.innerWidth - 300)),
     top: rect.bottom + 6,
     zIndex: 4200,
     background: "#fff",
@@ -57,12 +49,13 @@ function DatePopup({ anchorRef, value, onChange, onClose }) {
     borderRadius: 6,
     padding: 10,
     boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+    maxWidth: "calc(100vw - 20px)",
   };
 
   const fmt = (d) => d.toISOString().slice(0, 10);
   return (
     <div style={style} onMouseDown={(e) => e.stopPropagation()}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
         <button className="btn btn-sm btn-outline-secondary" onClick={() => { onChange(fmt(new Date())); onClose(); }}>Today</button>
         <button className="btn btn-sm btn-outline-secondary" onClick={() => { const d = new Date(); d.setDate(d.getDate() + 1); onChange(fmt(d)); onClose(); }}>Tomorrow</button>
         <button className="btn btn-sm btn-outline-secondary" onClick={() => { const d = new Date(); d.setDate(d.getDate() + 7); onChange(fmt(d)); onClose(); }}>+7d</button>
@@ -80,19 +73,23 @@ function DatePopup({ anchorRef, value, onChange, onClose }) {
 export default function Guruhlar() {
 
   const [groups, setGroups] = useState([]);
-  const [teachers, setTeachers] = useState([]); 
   const [query, setQuery] = useState("");
+  
+  // FILTER STATES
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterTeacher, setFilterTeacher] = useState("all");
+  const [filterCourse, setFilterCourse] = useState("all");
+  const [filterDays, setFilterDays] = useState("all");
+  const [filterStudents, setFilterStudents] = useState("all");
+  
   const [selectedGroupId, setSelectedGroupId] = useState(null);
-  // Try to restore groups from localStorage. If not present, use initialGroups.
-  // Also, compute accurate students counts from saved students list (if any).
+
   const restoreGroups = () => {
     try {
       const savedGroups = JSON.parse(localStorage.getItem(LS_GROUPS) || "null");
       const savedStudents = JSON.parse(localStorage.getItem(LS_STUDENTS) || "null");
       const base = Array.isArray(savedGroups) ? savedGroups : initialGroups;
       if (Array.isArray(savedStudents)) {
-        // recompute students counts from saved students
         const counts = {};
         savedStudents.forEach((s) => {
           const gid = s.groupId ?? null;
@@ -106,22 +103,10 @@ export default function Guruhlar() {
     }
   };
 
-  // Central groups state (only here + Group-item.jsx)
- // GROUPS FETCH
-useEffect(() => {
-  fetch("https://devoloper20.pythonanywhere.com/api/groups/")
-    .then(res => res.json())
-    .then(data => {
-      console.log("Groups API:", data.results);
-      setGroups(data.results);
-    })
-    .catch(err => console.error("Groups fetch error:", err));
-}, []);
+  useEffect(() => {
+    setGroups(restoreGroups());
+  }, []);
 
-
-
-  
-  // persist groups whenever they change so created/edited groups survive page refresh
   useEffect(() => {
     try {
       localStorage.setItem(LS_GROUPS, JSON.stringify(groups));
@@ -130,7 +115,6 @@ useEffect(() => {
     }
   }, [groups]);
 
-  // Yangi guruh uchun state
   const [newGroup, setNewGroup] = useState({
     name: "",
     course: "",
@@ -142,15 +126,13 @@ useEffect(() => {
     end: "",
   });
 
-  // inline validation errors (show under inputs instead of alert)
   const [errors, setErrors] = useState({});
   const [saveSuccess, setSaveSuccess] = useState("");
   const saveTimeoutRef = useRef(null);
 
-  // small date popup anchor ref for start/end in offcanvas
   const startAnchorRef = useRef(null);
   const endAnchorRef = useRef(null);
-  const [datePopupFor, setDatePopupFor] = useState(null); // "start" | "end" | null
+  const [datePopupFor, setDatePopupFor] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -158,14 +140,10 @@ useEffect(() => {
     };
   }, []);
 
-  const clearErrors = () => setErrors({});
-
-  // Called by Group-item.jsx whenever that component's students list length changes
   const updateGroupStudentCount = (groupId, newCount) => {
     setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, students: newCount } : g)));
   };
 
-  // Called by Group-item.jsx when editing group metadata
   const updateGroup = (groupId, patch) => {
     setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, ...patch } : g)));
     setSaveSuccess("Guruh ma'lumotlari saqlandi");
@@ -174,7 +152,6 @@ useEffect(() => {
   };
 
   const handleSave = () => {
-    // validation inline
     const e = {};
     if (!newGroup.name) e.name = "Iltimos, guruh nomini kiriting";
     if (!newGroup.course) e.course = "Iltimos, kursni tanlang";
@@ -194,13 +171,12 @@ useEffect(() => {
       ...newGroup,
       end: newGroup.end || "—",
       duration: "0 oy / 0 hafta",
-      students: 0, // ensure new group starts with 0 students
+      students: 0,
       status: "faol",
     };
 
     setGroups((p) => [...p, item]);
 
-    // try hide bootstrap offcanvas if exists
     try {
       const offcanvas = document.getElementById("addGroupOffcanvas");
       const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
@@ -218,12 +194,10 @@ useEffect(() => {
       room: "",
     });
 
-    // show nice inline success (not alert)
     setSaveSuccess("Guruh yaratildi");
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => setSaveSuccess(""), 2500);
 
-    // open detail view for newly created group
     setSelectedGroupId(item.id);
   };
 
@@ -253,29 +227,63 @@ useEffect(() => {
     URL.revokeObjectURL(url);
   };
 
+  // GET UNIQUE VALUES FOR DROPDOWNS
+  const uniqueTeachers = ["all", ...new Set(groups.map(g => g.teacher))];
+  const uniqueCourses = ["all", ...new Set(groups.map(g => g.course))];
+  const uniqueDays = ["all", ...new Set(groups.map(g => g.days))];
+
+  // APPLY ALL FILTERS
   const filtered = groups.filter((g) => {
     const q = query.trim().toLowerCase();
-    if (filterStatus !== "all" && g.status.toLowerCase() !== filterStatus) return false;
-    if (!q) return true;
-    return (
-      (g.name || "").toLowerCase().includes(q) ||
+    
+    // Search filter
+    if (q && !((g.name || "").toLowerCase().includes(q) ||
       (g.course || "").toLowerCase().includes(q) ||
       (g.teacher || "").toLowerCase().includes(q) ||
-      (g.room || "").toLowerCase().includes(q)
-    );
+      (g.room || "").toLowerCase().includes(q))) {
+      return false;
+    }
+
+    // Status filter
+    if (filterStatus !== "all" && g.status.toLowerCase() !== filterStatus) {
+      return false;
+    }
+
+    // Teacher filter
+    if (filterTeacher !== "all" && g.teacher !== filterTeacher) {
+      return false;
+    }
+
+    // Course filter
+    if (filterCourse !== "all" && g.course !== filterCourse) {
+      return false;
+    }
+
+    // Days filter
+    if (filterDays !== "all" && g.days !== filterDays) {
+      return false;
+    }
+
+    // Students filter
+    if (filterStudents !== "all") {
+      if (filterStudents === "0" && g.students !== 0) return false;
+      if (filterStudents === "1-5" && (g.students < 1 || g.students > 5)) return false;
+      if (filterStudents === "6-10" && (g.students < 6 || g.students > 10)) return false;
+      if (filterStudents === "10+" && g.students < 10) return false;
+    }
+
+    return true;
   });
 
-  // If a group is selected, render the Group-item (detail) component only.
   if (selectedGroupId !== null) {
     const group = groups.find((g) => g.id === selectedGroupId) || null;
     return (
-      <div style={{ minHeight: "100vh", background: "#fafafa", padding: 16 }}>
+      <div style={{ minHeight: "100vh", background: "#fafafa", padding: "1rem" }}>
         <button className="btn btn-sm btn-outline-secondary mb-3" onClick={() => setSelectedGroupId(null)}>
           ← Orqaga
         </button>
 
         <GroupItem
-          // pass group + helpers so Group-item.jsx can update group metadata and notify about student counts
           group={group}
           groups={groups}
           setGroups={setGroups}
@@ -287,149 +295,148 @@ useEffect(() => {
     );
   }
 
-  // Default: list view
   return (
     <div className="layout">
-      {/* ======= MAIN CONTENT ======= */}
-      <main className="content cardd p-3 p-md-4">
+      <main className="content cardd p-2 p-sm-3 p-md-4">
         {/* HEADER */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h3 className="fw-bold">
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
+          <h3 className="fw-bold mb-0">
             Guruhlar{" "}
-            <small className="text-muted ms-2">Miqdor — {groups.length}</small>
+            <small className="text-muted ms-2 d-inline-block">Miqdor — {filtered.length}</small>
           </h3>
 
-          <div className="d-flex gap-2">
-            <button className="btn btn-outline-secondary" onClick={() => exportGroupsToCSV(filtered)}>Excelga yuklab olish</button>
+          <div className="d-flex gap-2 flex-wrap">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => exportGroupsToCSV(filtered)}>
+              <span className="d-none d-sm-inline">Excelga yuklab olish</span>
+              <span className="d-inline d-sm-none">Excel</span>
+            </button>
             <button
-              className="btn btn-warning"
+              className="btn btn-warning btn-sm"
               data-bs-toggle="offcanvas"
               data-bs-target="#addGroupOffcanvas"
             >
-              Yangisini qo'shish
+              <span className="d-none d-sm-inline">Yangisini qo'shish</span>
+              <span className="d-inline d-sm-none">+</span>
             </button>
           </div>
         </div>
 
         {/* FILTERS */}
-        <div className="filters bg-white p-3 rounded shadow-sm mb-3">
+        <div className="filters bg-white p-2 p-md-3 rounded shadow-sm mb-3">
           <div className="row g-2">
-            <div className="col-12 col-md-3">
-              <select className="form-select form-select-sm">
-                <option>Faol guruhlar</option>
-                <option>Yopilgan guruhlar</option>
+            <div className="col-12 col-sm-6 col-md-3">
+              <label className="form-label small mb-1">Status</label>
+              <select className="form-select form-select-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="all">Hammasi</option>
+                <option value="faol">Faol</option>
+                <option value="yopilgan">Yopilgan</option>
               </select>
             </div>
 
-            <div className="col-6 col-md-2">
-              <select className="form-select form-select-sm">
-                <option value="all">O'qituvchilar</option>
-                <option value="Ikrombek Xoliqjonov">Ikrombek Xoliqjonov</option>
-                <option value="Og'abek Yoqubjonov">Og'abek Yoqubjonov</option>
-                <option value="Bekzod Boyqo'ziyev">Bekzod Boyqo'ziyev</option>
-                <option value="Behruz">Behruz</option>
+            <div className="col-12 col-sm-6 col-md-3">
+              <label className="form-label small mb-1">O'qituvchi</label>
+              <select className="form-select form-select-sm" value={filterTeacher} onChange={(e) => setFilterTeacher(e.target.value)}>
+                {uniqueTeachers.map((t) => (
+                  <option key={t} value={t}>
+                    {t === "all" ? "Hammasi" : t}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div className="col-6 col-md-2">
-              <select className="form-select form-select-sm">
-                <option value="all">Kurslar</option>
-                <option value="Frontend">Frontend</option>
-                <option value="Backend">Backend</option>
-                <option value="Fullstack">Fullstack</option>
-                <option value="UI/UX">UI/UX</option>
+            <div className="col-12 col-sm-6 col-md-2">
+              <label className="form-label small mb-1">Kurs</label>
+              <select className="form-select form-select-sm" value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)}>
+                {uniqueCourses.map((c) => (
+                  <option key={c} value={c}>
+                    {c === "all" ? "Hammasi" : c}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div className="col-6 col-md-2">
-              <select className="form-select form-select-sm">
-                <option value="all">Kunlar</option>
-                <option value="Toq kunlar">Toq kunlar</option>
-                <option value="Juft kunlar">Juft kunlar</option>
-                <option value="Har kuni">Har kuni</option>
-                <option value="Dam olish">Dam olish</option>
+            <div className="col-12 col-sm-6 col-md-2">
+              <label className="form-label small mb-1">Kunlar</label>
+              <select className="form-select form-select-sm" value={filterDays} onChange={(e) => setFilterDays(e.target.value)}>
+                {uniqueDays.map((d) => (
+                  <option key={d} value={d}>
+                    {d === "all" ? "Hammasi" : d}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div className="col-6 col-md-3">
-              <div className="input-group input-group-sm">
-                <input
-                  className="form-control"
-                  placeholder="Qidirish..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={() => setQuery("")}
-                >
-                  X
-                </button>
-              </div>
+            <div className="col-12 col-sm-6 col-md-2">
+              <label className="form-label small mb-1">Talabalar</label>
+              <select className="form-select form-select-sm" value={filterStudents} onChange={(e) => setFilterStudents(e.target.value)}>
+                <option value="all">Hammasi</option>
+                <option value="0">0 ta</option>
+                <option value="1-5">1-5 ta</option>
+                <option value="6-10">6-10 ta</option>
+                <option value="10+">10+ ta</option>
+              </select>
             </div>
           </div>
 
-          <div className="d-flex align-items-center mt-2 gap-3 small">
-            <label>
+          <div className="mt-2">
+            <div className="input-group input-group-sm">
               <input
-                type="radio"
-                checked={filterStatus === "all"}
-                onChange={() => setFilterStatus("all")}
-              />{" "}
-              Hammasi
-            </label>
-            <label>
-              <input
-                type="radio"
-                checked={filterStatus === "faol"}
-                onChange={() => setFilterStatus("faol")}
-              />{" "}
-              Faol
-            </label>
-            <label>
-              <input
-                type="radio"
-                checked={filterStatus === "yopilgan"}
-                onChange={() => setFilterStatus("yopilgan")}
-              />{" "}
-              Yopilgan
-            </label>
+                className="form-control form-control-sm"
+                placeholder="Qidirish: Guruh nomi, Kurs, O'qituvchi yoki Xona..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setQuery("")}
+              >
+                X
+              </button>
+            </div>
           </div>
         </div>
 
         {/* TABLE */}
-        <div className="bg-white rounded shadow-sm">
+        <div className="bg-white rounded shadow-sm table-responsive">
           <table className="table table-hover mb-0 align-middle small">
             <thead className="table-light">
               <tr>
-                <th>Guruh</th>
-                <th>Kurs</th>
-                <th>O'qituvchi</th>
-                <th>Kunlar</th>
-                <th>Sana</th>
-                <th>Xona</th>
-                <th>Talabalar</th>
+                <th style={{ minWidth: "120px" }}>Guruh</th>
+                <th style={{ minWidth: "100px" }}>Kurs</th>
+                <th style={{ minWidth: "120px" }}>O'qituvchi</th>
+                <th style={{ minWidth: "100px" }}>Kunlar</th>
+                <th style={{ minWidth: "110px" }}>Sana</th>
+                <th style={{ minWidth: "80px" }}>Xona</th>
+                <th style={{ minWidth: "60px" }}>Talabalar</th>
               </tr>
             </thead>
 
             <tbody>
-              {filtered.map((g) => (
-                <tr key={g.id} style={{ cursor: "pointer" }} onClick={() => setSelectedGroupId(g.id)}>
-                  <td className="fw-semibold">{g.name}</td>
-                  <td>{g.course}</td>
-                  <td>{g.teacher}</td>
-                  <td>
-                    <div className="text-muted">{g.days}</div>
-                    <div>{g.time}</div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center text-muted py-4">
+                    Hech qanday guruh topilmadi
                   </td>
-                  <td>
-                    <div>{g.start}</div>
-                    <div>{g.end}</div>
-                  </td>
-                  <td>{g.room}</td>
-                  <td className="text-center">{g.students ?? 0}</td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((g) => (
+                  <tr key={g.id} style={{ cursor: "pointer" }} onClick={() => setSelectedGroupId(g.id)}>
+                    <td className="fw-semibold">{g.name}</td>
+                    <td>{g.course}</td>
+                    <td>{g.teacher}</td>
+                    <td>
+                      <div className="text-muted small">{g.days}</div>
+                      <div className="fw-500">{g.time}</div>
+                    </td>
+                    <td>
+                      <div>{g.start}</div>
+                      <div className="text-muted small">{g.end}</div>
+                    </td>
+                    <td>{g.room}</td>
+                    <td className="text-center fw-semibold">{g.students ?? 0}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -440,10 +447,10 @@ useEffect(() => {
         className="offcanvas offcanvas-end"
         tabIndex="-1"
         id="addGroupOffcanvas"
-        style={{ width: "420px" }}
+        style={{ width: "100%", maxWidth: "420px" }}
       >
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title fw-semibold">Yangi guruh qo‘shish</h5>
+          <h5 className="offcanvas-title fw-semibold">Yangi guruh qo'shish</h5>
           <button
             type="button"
             className="btn-close"
@@ -452,77 +459,76 @@ useEffect(() => {
         </div>
 
         <div className="offcanvas-body">
-          {/* Success message (not alert) */}
-          {saveSuccess && <div className="alert alert-success small">{saveSuccess}</div>}
+          {saveSuccess && <div className="alert alert-success small mb-3">{saveSuccess}</div>}
 
           <div className="mb-3">
             <label className="form-label">Nomi</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control form-control-sm"
               value={newGroup.name}
               onChange={(e) => { setNewGroup({ ...newGroup, name: e.target.value }); if (errors.name) setErrors((p) => { const np = { ...p }; delete np.name; return np; }); }}
             />
-            {errors.name && <div className="form-text text-danger">{errors.name}</div>}
+            {errors.name && <div className="form-text text-danger small">{errors.name}</div>}
           </div>
 
           <div className="mb-3">
             <label className="form-label">Kurs tanlash</label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={newGroup.course}
               onChange={(e) => { setNewGroup({ ...newGroup, course: e.target.value }); if (errors.course) setErrors((p) => { const np = { ...p }; delete np.course; return np; }); }}
             >
-              <option className="option" value="">Kursni tanlang</option>
-              <option className="option" value="Frontend">Frontend</option>
-              <option className="option" value="Backend">Backend</option>
-              <option className="option" value="Fullstack">Fullstack</option>
-              <option className="option" value="UI/UX">UI/UX</option>
+              <option value="">Kursni tanlang</option>
+              <option value="Frontend">Frontend</option>
+              <option value="Backend">Backend</option>
+              <option value="Fullstack">Fullstack</option>
+              <option value="UI/UX">UI/UX</option>
             </select>
-            {errors.course && <div className="form-text text-danger">{errors.course}</div>}
+            {errors.course && <div className="form-text text-danger small">{errors.course}</div>}
           </div>
 
           <div className="mb-3">
             <label className="form-label">O'qituvchi</label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={newGroup.teacher}
               onChange={(e) => { setNewGroup({ ...newGroup, teacher: e.target.value }); if (errors.teacher) setErrors((p) => { const np = { ...p }; delete np.teacher; return np; }); }}
             >
-              <option className="option" value="">O'qituvchini tanlang</option>
-              <option className="option" value="Ikrombek Xoliqjonov">Ikrombek Xoliqjonov</option>
-              <option className="option" value="Og'abek Yoqubjonov">Og'abek Yoqubjonov</option>
-              <option className="option" value="Bekzod Boyqo'ziyev">Bekzod Boyqo'ziyev</option>
-              <option className="option" value="Behruz">Behruz</option>
+              <option value="">O'qituvchini tanlang</option>
+              <option value="Ikrombek Xoliqjonov">Ikrombek Xoliqjonov</option>
+              <option value="Og'abek Yoqubjonov">Og'abek Yoqubjonov</option>
+              <option value="Bekzod Boyqo'ziyev">Bekzod Boyqo'ziyev</option>
+              <option value="Behruz">Behruz</option>
             </select>
-            {errors.teacher && <div className="form-text text-danger">{errors.teacher}</div>}
+            {errors.teacher && <div className="form-text text-danger small">{errors.teacher}</div>}
           </div>
 
           <div className="mb-3">
             <label className="form-label">Kunlar</label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={newGroup.days}
               onChange={(e) => { setNewGroup({ ...newGroup, days: e.target.value }); if (errors.days) setErrors((p) => { const np = { ...p }; delete np.days; return np; }); }}
             >
-              <option className="option" value="">Kunlarni tanlang</option>
-              <option className="option" value="Toq kunlar">Toq kunlar</option>
-              <option className="option" value="Juft kunlar">Juft kunlar</option>
-              <option className="option" value="Har kuni">Har kuni</option>
-              <option className="option" value="Dam olish">Dam olish</option>
+              <option value="">Kunlarni tanlang</option>
+              <option value="Toq kunlar">Toq kunlar</option>
+              <option value="Juft kunlar">Juft kunlar</option>
+              <option value="Har kuni">Har kuni</option>
+              <option value="Dam olish">Dam olish</option>
             </select>
-            {errors.days && <div className="form-text text-danger">{errors.days}</div>}
+            {errors.days && <div className="form-text text-danger small">{errors.days}</div>}
           </div>
 
           <div className="mb-3">
             <label className="form-label">Boshlanish vaqti</label>
             <input
               type="time"
-              className="form-control"
+              className="form-control form-control-sm"
               value={newGroup.time}
               onChange={(e) => { setNewGroup({ ...newGroup, time: e.target.value }); if (errors.time) setErrors((p) => { const np = { ...p }; delete np.time; return np; }); }}
             />
-            {errors.time && <div className="form-text text-danger">{errors.time}</div>}
+            {errors.time && <div className="form-text text-danger small">{errors.time}</div>}
           </div>
 
           <div className="mb-3" style={{ position: "relative" }}>
@@ -531,13 +537,13 @@ useEffect(() => {
               <input
                 ref={startAnchorRef}
                 type="date"
-                className="form-control"
+                className="form-control form-control-sm"
                 value={newGroup.start}
                 onChange={(e) => { setNewGroup({ ...newGroup, start: e.target.value }); if (errors.start) setErrors((p) => { const np = { ...p }; delete np.start; return np; }); }}
                 onFocus={() => setDatePopupFor("start")}
                 onClick={() => setDatePopupFor("start")}
               />
-              {errors.start && <div className="form-text text-danger">{errors.start}</div>}
+              {errors.start && <div className="form-text text-danger small">{errors.start}</div>}
             </div>
           </div>
 
@@ -547,41 +553,38 @@ useEffect(() => {
               <input
                 ref={endAnchorRef}
                 type="date"
-                className="form-control"
+                className="form-control form-control-sm"
                 value={newGroup.end || ""}
                 onChange={(e) => { setNewGroup({ ...newGroup, end: e.target.value }); if (errors.end) setErrors((p) => { const np = { ...p }; delete np.end; return np; }); }}
                 onFocus={() => setDatePopupFor("end")}
                 onClick={() => setDatePopupFor("end")}
               />
-              {errors.end && <div className="form-text text-danger">{errors.end}</div>}
+              {errors.end && <div className="form-text text-danger small">{errors.end}</div>}
             </div>
           </div>
 
           <div className="mb-3">
             <label className="form-label">Xona</label>
             <select
-              className="form-select"
+              className="form-select form-select-sm"
               value={newGroup.room}
               onChange={(e) => { setNewGroup({ ...newGroup, room: e.target.value }); if (errors.room) setErrors((p) => { const np = { ...p }; delete np.room; return np; }); }}
             >
-              <option className="option" value="">Xonani tanlang</option>
-              <option className="option" value="Room #1">Room #1</option>
-              <option className="option" value="Room #2">Room #2</option>
-              <option className="option" value="Room #3">Room #3</option>
+              <option value="">Xonani tanlang</option>
+              <option value="Room #1">Room #1</option>
+              <option value="Room #2">Room #2</option>
+              <option value="Room #3">Room #3</option>
             </select>
-            {errors.room && <div className="form-text text-danger">{errors.room}</div>}
+            {errors.room && <div className="form-text text-danger small">{errors.room}</div>}
           </div>
 
           <button
-            className="btn btn-warning w-100  "
-            onClick={() => {
-              handleSave();
-            }}
+            className="btn btn-warning w-100 btn-sm"
+            onClick={handleSave}
           >
             Saqlash
           </button>
 
-          {/* date popup instances */}
           {datePopupFor === "start" && (
             <DatePopup anchorRef={startAnchorRef} value={newGroup.start} onChange={(v) => setNewGroup((p) => ({ ...p, start: v }))} onClose={() => setDatePopupFor(null)} />
           )}

@@ -1,0 +1,38 @@
+.stats-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  border:1px solid #e5e7eb; /* tashqi border */
+}
+
+.stats-table td{
+  padding:10px 14px;
+  font-size:14px;
+  cursor:pointer;
+
+  border:1px solid #e5e7eb; /* ichki border */
+}
+
+.stats-table .label{
+  color:#374151;
+}
+
+.stats-table .count{
+  text-align:right;
+  font-weight:600;
+  width:60px;
+}
+
+/* hover */
+.stats-table tr:hover{
+  background:#f9fafb;
+}
+
+/* active */
+.stats-table .active{
+  background:#e5e7eb;
+}
+
+.stats-table td:nth-child(3){
+  border-left:100px solid #fff; /* ajratadi */
+}

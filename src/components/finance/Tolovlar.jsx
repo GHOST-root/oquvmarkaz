@@ -1,5 +1,4 @@
-// Tolovlar komponenti
-import React, { useState, useMemo,useEffect} from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import StudentDashboard from "./StudentDashboard";
 import "./Tolovlar.css";
 import { Line } from "react-chartjs-2";
@@ -14,7 +13,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Link } from "react-router-dom";
 
 ChartJS.register(
   LineElement,
@@ -26,15 +24,9 @@ ChartJS.register(
 );
 
 export default function Tolovlar() {
-
-useEffect(() => {
-  fetch('')
-  .then(res => res.json())
-  .then(data => console.log(data))
-}, [])
-
-
-
+  useEffect(() => {
+    // API ulanishi
+  }, []);
 
   const chartData = {
     labels: ["Okt 25", "Okt 26", "Okt 27", "Okt 28", "Okt 29"],
@@ -52,15 +44,10 @@ useEffect(() => {
 
   const chartOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: false },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
     scales: {
-      y: {
-        beginAtZero: false,
-        suggestedMin: 749990,
-        suggestedMax: 750010,
-      },
+      y: { beginAtZero: false, suggestedMin: 749990, suggestedMax: 750010 },
     },
   };
 
@@ -94,349 +81,377 @@ useEffect(() => {
   const [payments] = useState(initialPayments);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  // 🔥 filters avval e’lon qilinadi → filtered ishlashi uchun
-  const [filters, setFilters] = useState({
-    fromDate: "",
-    toDate: "",
-    name: "",
-    group: "",
-    course: "",
-    teacher: "",
-    staff: "",
-    createdFrom: "",
-    createdTo: "",
-    paymentType: "",
-    amount: "",
-  });
+  // 1. Inputlarga yozilayotgan vaqtinchalik ma'lumotlar
+  const initialFilterState = {
+    fromDate: "", toDate: "", name: "", group: "", course: "",
+    teacher: "", staff: "", createdFrom: "", createdTo: "", paymentType: "", amount: "",
+  };
+  const [filters, setFilters] = useState(initialFilterState);
+
+  // 2. TUGMA BOSILGANDA jadvalga ta'sir qiladigan ASOSIY FILTRLAR
+  const [appliedFilters, setAppliedFilters] = useState(initialFilterState);
+
+  const filterLabels = {
+    fromDate: "Sanadan boshlab", toDate: "Sana bo‘yicha", name: "Ism yoki Telefon",
+    group: "Guruhni tanlang", course: "Kurs", teacher: "O‘qituvchi", paymentType: "To‘lov turi",
+    staff: "Xodim", amount: "Sum", createdFrom: "Yaratilgan sanadan", createdTo: "Yaratilgan sanagacha"
+  };
+
+  const [visibleFilters, setVisibleFilters] = useState(
+    Object.keys(filterLabels).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  );
+
+  const toggleFilterVisibility = (field) => {
+    setVisibleFilters(prev => ({ ...prev, [field]: !prev[field] }));
+  };
 
   const updateField = (field, value) => {
     setFilters({ ...filters, [field]: value });
   };
 
-  const resetFields = () => {
-    setFilters({
-      fromDate: "",
-      toDate: "",
-      name: "",
-      group: "",
-      course: "",
-      teacher: "",
-      staff: "",
-      createdFrom: "",
-      createdTo: "",
-      paymentType: "",
-      amount: "",
-    });
+  // --- YANGI: TUGMALAR UCHUN FUNKSIYALAR ---
+  const handleApplyFilter = () => {
+    // Faqat "Filter" tugmasi bosilganda inputdagi ma'lumotlarni asosiy filterga o'tkazamiz
+    setAppliedFilters(filters);
   };
 
-  // 🔥 FILTERED to‘g‘ri joyga qo‘yildi
+  const clearFilters = () => {
+    // "Tozalash" bosilganda ham inputlarni, ham qidiruv natijalarini tozalaymiz
+    setFilters(initialFilterState);
+    setAppliedFilters(initialFilterState);
+  };
+  // ------------------------------------------
+
+  // Jadvalni "appliedFilters" (Tugma bosilgandagi state) orqali filtrlash
   const filtered = useMemo(() => {
     return payments.filter((p) => {
-      if (filters.fromDate && p.date < filters.fromDate) return false;
-      if (filters.toDate && p.date > filters.toDate) return false;
-
-      if (filters.name) {
-        const n = filters.name.toLowerCase();
-        if (!p.student.toLowerCase().includes(n)) return false;
+      if (appliedFilters.fromDate && p.date < appliedFilters.fromDate) return false;
+      if (appliedFilters.toDate && p.date > appliedFilters.toDate) return false;
+      
+      if (appliedFilters.name) {
+        const searchName = appliedFilters.name.toLowerCase();
+        if (!p.student.toLowerCase().includes(searchName)) return false;
       }
-
-      if (filters.group && p.note !== filters.group) return false;
-      if (filters.teacher && p.teacher !== filters.teacher) return false;
-      if (filters.paymentType && p.type !== filters.paymentType) return false;
-
-      if (filters.amount && Number(filters.amount) !== p.sum) return false;
-
-      if (filters.staff && p.staff !== filters.staff) return false;
-
-      if (filters.createdFrom) {
+      
+      if (appliedFilters.group && p.note !== appliedFilters.group) return false;
+      if (appliedFilters.teacher && p.teacher !== appliedFilters.teacher) return false;
+      if (appliedFilters.paymentType && p.type !== appliedFilters.paymentType) return false;
+      if (appliedFilters.amount && Number(appliedFilters.amount) !== p.sum) return false;
+      if (appliedFilters.staff && p.staff !== appliedFilters.staff) return false;
+      
+      if (appliedFilters.createdFrom) {
         const created = p.time.split(" ")[0];
-        if (created < filters.createdFrom) return false;
+        if (created < appliedFilters.createdFrom) return false;
       }
-      if (filters.createdTo) {
+      if (appliedFilters.createdTo) {
         const created = p.time.split(" ")[0];
-        if (created > filters.createdTo) return false;
+        if (created > appliedFilters.createdTo) return false;
       }
-
+      
       return true;
     });
-  }, [payments, filters]);
+  }, [payments, appliedFilters]);
 
-  // 🔥 totals filtered dan keyin turishi shart!
   const totals = useMemo(() => {
     const totalSum = filtered.reduce((s, p) => s + p.sum, 0);
     return { totalSum, profit: totalSum };
   }, [filtered]);
 
-  // Agar talaba tanlansa — dashboard
   if (selectedStudent) {
-    return (
-      <StudentDashboard
-        student={selectedStudent}
-        onBack={() => setSelectedStudent(null)}
-      />
-    );
+    return <StudentDashboard student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
   }
 
-  const clearFilters = () => {
-    setFilters({
-      fromDate: "",
-      toDate: "",
-      name: "",
-      group: "",
-      teacher: "",
-      paymentType: "",
-      amount: "",
-      staff: "",
-      createdFrom: "",
-      createdTo: "",
-    });
-  };
-
   return (
-    <div className="container my-4 tolovlar-page">
-      {/* HEADER */}
-         
-      {/* Top Alert Banner */}
+    <div className="container-fluid my-4 tolovlar-page px-4">
+      
+      <h3 className="mb-4 fw-bold text-dark">Barcha to'lovlar</h3>
 
-      <h3 className="mb-3">Barcha to'lovlar</h3>
-
-      <div className="row g-3">
+      <div className="row g-4">
         {/* LEFT CARDS */}
         <div className="col-lg-5">
-          <div className="card card-stat mb-3">
-            <div className="card-body d-flex justify-content-between">
+          <div className="card card-stat mb-3 border-0 shadow-sm">
+            <div className="card-body d-flex justify-content-between align-items-center p-4">
               <div>
-                <div className="text-muted small">To'lovlar miqdori:</div>
-                <h4 className="fw-bold">
+                <div className="text-muted small fw-medium mb-1">To'lovlar miqdori:</div>
+                <h3 className="fw-bold text-dark m-0">
                   {totals.totalSum.toLocaleString()} UZS
-                </h4>
-                <div className="small text-muted">01.10.2025 — 31.10.2025</div>
+                </h3>
+                <div className="small text-muted mt-1">01.10.2025 — 31.10.2025</div>
               </div>
-              <div className="icon-stack">💰</div>
+              <div className="icon-stack bg-light rounded-circle d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', fontSize: '24px' }}>💰</div>
             </div>
           </div>
 
-          <div className="card card-stat mb-3">
-            <div className="card-body d-flex justify-content-between">
+          <div className="card card-stat border-0 shadow-sm">
+            <div className="card-body d-flex justify-content-between align-items-center p-4">
               <div>
-                <div className="text-muted small">Sof foyda miqdori:</div>
-                <h4 className="fw-bold">
+                <div className="text-muted small fw-medium mb-1">Sof foyda miqdori:</div>
+                <h3 className="fw-bold text-dark m-0">
                   {totals.profit.toLocaleString()} UZS
-                </h4>
-                <div className="small text-muted">01.10.2025 — 31.10.2025</div>
+                </h3>
+                <div className="small text-muted mt-1">01.10.2025 — 31.10.2025</div>
               </div>
-              <div className="icon-stack">💵</div>
+              <div className="icon-stack bg-light rounded-circle d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', fontSize: '24px' }}>💵</div>
             </div>
           </div>
         </div>
 
         {/* CHART */}
         <div className="col-lg-7">
-          <div className="card chart-card">
-            <div className="card-body">
-              <Line data={chartData} options={chartOptions} height={90} />
-            </div>
-          </div>
-        </div>
-
-        {/* FILTERS */}
-        <div className="filter-wrapper container-fluid p-3">
-          <div className="row g-3 align-items-end mb-2">
-            <div className="col-md-2">
-              <label>Sanadan boshlab</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filters.fromDate}
-                onChange={(e) => updateField("fromDate", e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label>Sana bo‘yicha</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filters.toDate}
-                onChange={(e) => updateField("toDate", e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label>Ism yoki Telefon</label>
-              <input
-                type="text"
-                className="form-control"
-                value={filters.name}
-                onChange={(e) => updateField("name", e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label>Guruhni tanlang</label>
-              <select
-                className="form-select"
-                value={filters.group}
-                onChange={(e) => updateField("group", e.target.value)}
-              >
-                <option value="">Tanlang</option>
-                <option>FrontEnd</option>
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label>Kurs</label>
-              <select
-                className="form-select"
-                value={filters.group}
-                onChange={(e) => updateField("group", e.target.value)}
-              >
-                <option value="">Tanlang</option>
-                <option>FrontEnd</option>
-              </select>
-            </div>
-
-
-            <div className="col-md-2">
-              <label>O‘qituvchi</label>
-              <select
-                className="form-select"
-                value={filters.teacher}
-                onChange={(e) => updateField("teacher", e.target.value)}
-              >
-                <option value="">Tanlang</option>
-                <option>First teacher</option>
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label>To‘lov turi</label>
-              <select
-                className="form-select"
-                value={filters.paymentType}
-                onChange={(e) => updateField("paymentType", e.target.value)}
-              >
-                <option value="">Tanlang</option>
-                <option>Naqd pul</option>
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label>Sum</label>
-              <input
-                type="number"
-                className="form-control"
-                value={filters.amount}
-                onChange={(e) => updateField("amount", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="row g-3 align-items-end">
-            <div className="col-md-2">
-              <label>Xodim</label>
-              <select
-                className="form-select"
-                value={filters.staff}
-                onChange={(e) => updateField("staff", e.target.value)}
-              >
-                <option value="">Tanlang</option>
-                <option>Hojimurod Nasriddinov</option>
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label>Yaratilgan sanadan</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filters.createdFrom}
-                onChange={(e) => updateField("createdFrom", e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label>Yaratilgan sanagacha</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filters.createdTo}
-                onChange={(e) => updateField("createdTo", e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-1 d-md-flex">
-               <button className="filter-btn">Filter</button>
-              <button
-                variant="secondary"
-                className="ms-2
-                btn btn-outline-secondary mt-4"
-                onClick={clearFilters}
-              >
-                Tozalash
-              </button>
-               
-
-
+          <div className="card chart-card border-0 shadow-sm h-100">
+            <div className="card-body" style={{ height: '230px', position: 'relative' }}>
+              <Line data={chartData} options={chartOptions} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="my-4">
-<div className="d-flex justify-content-end align-items-center">
-          <button className="mb-3  button"><i class="fa-solid fa-gear"></i>Filter</button>
-  
-</div>
-        <div className="table-responsive card">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Sana</th>
-                <th>Talaba ismi</th>
-                <th>Sum</th>
-                <th>To'lov turi</th>
-                <th>O'qituvchi</th>
-                <th>Izoh</th>
-                <th>Xodim</th>
-              </tr>
-            </thead>
+      {/* DROPDOWN (⚙ Filtr) */}
+      <div className="d-flex justify-content-end mt-4 mb-2">
+        <div className="dropdown">
 
-            <tbody>
-              {filtered.map((p) => (
-                <tr
-                  key={p.id}
-                  onClick={() =>
-                    setSelectedStudent({
-                      name: p.student,
-                      date: p.date,
-                      sum: p.sum,
-                      group: p.note,
-                      teacher: p.teacher,
-                    })
-                  }
-                  style={{ cursor: "pointer" }}
-                >
-                  <td>{p.date}</td>
-                  <td>{p.student}</td>
-                  <td>
-                    {p.sum.toLocaleString()} {p.currency}
-                  </td>
-                  <td>{p.type}</td>
-                  <td>{p.teacher}</td>
-                  <td>
-                    <span className="badge bg-secondary">{p.note}</span>
-                  </td>
-                  <td>
-                    <div className="small">{p.staff}</div>
-                    <div className="small text-muted">{p.time}</div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <button
+            className="btn btn-outline-secondary dropdown-toggle px-3 py-2 "
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+          >
+            ⚙ Filtr
+          </button>
+
+          <ul
+            className="dropdown-menu shadow p-3 border-0"
+            style={{ width: "250px", borderRadius: "10px" }}
+          >
+            <h6 className="dropdown-header px-1 text-dark fw-bold mb-2">
+              Ko‘rinadigan ustunlar
+            </h6>
+
+            {Object.entries(filterLabels).map(([key, label]) => (
+              <li key={key}>
+                <div className="form-check mb-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`chk-${key}`}
+                    checked={visibleFilters[key]}
+                    onChange={() => toggleFilterVisibility(key)}
+                  />
+                  <label
+                    className="form-check-label text-muted"
+                    htmlFor={`chk-${key}`}
+                    style={{ fontSize: "14px" }}
+                  >
+                    {label}
+                  </label>
+                </div>
+              </li>
+            ))}
+          </ul>
+
         </div>
+      </div>
+
+
+      {/* FILTERS WRAPPER */}
+      <div className="filter-wrapper">
+
+        {visibleFilters.fromDate && (
+          <div className="f-item">
+            <label>Sanadan boshlab</label>
+            <input
+              type="date"
+              value={filters.fromDate}
+              onChange={(e) => updateField("fromDate", e.target.value)}
+            />
+          </div>
+        )}
+
+        {visibleFilters.toDate && (
+          <div className="f-item">
+            <label>Sana bo‘yicha</label>
+            <input
+              type="date"
+              value={filters.toDate}
+              onChange={(e) => updateField("toDate", e.target.value)}
+            />
+          </div>
+        )}
+
+        {visibleFilters.name && (
+          <div className="f-item wide">
+            <label>Ism yoki Telefon</label>
+            <input
+              type="text"
+              placeholder="Qidiruv..."
+              value={filters.name}
+              onChange={(e) => updateField("name", e.target.value)}
+            />
+          </div>
+        )}
+
+        {visibleFilters.group && (
+          <div className="f-item">
+            <label>Guruhni tanlang</label>
+            <select
+              value={filters.group}
+              onChange={(e) => updateField("group", e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              <option>FrontEnd</option>
+            </select>
+          </div>
+        )}
+
+        {visibleFilters.course && (
+          <div className="f-item">
+            <label>Kurs</label>
+            <select
+              value={filters.course}
+              onChange={(e) => updateField("course", e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              <option>FrontEnd</option>
+            </select>
+          </div>
+        )}
+
+        {visibleFilters.teacher && (
+          <div className="f-item">
+            <label>O‘qituvchi</label>
+            <select
+              value={filters.teacher}
+              onChange={(e) => updateField("teacher", e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              <option>First teacher</option>
+            </select>
+          </div>
+        )}
+
+        {visibleFilters.paymentType && (
+          <div className="f-item">
+            <label>To‘lov turi</label>
+            <select
+              value={filters.paymentType}
+              onChange={(e) => updateField("paymentType", e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              <option>Naqd pul</option>
+            </select>
+          </div>
+        )}
+
+        {visibleFilters.staff && (
+          <div className="f-item">
+            <label>Xodim</label>
+            <select
+              value={filters.staff}
+              onChange={(e) => updateField("staff", e.target.value)}
+            >
+              <option value="">Barchasi</option>
+              <option>Hojimurod Nasriddinov</option>
+            </select>
+          </div>
+        )}
+
+        {visibleFilters.amount && (
+          <div className="f-item">
+            <label>Sum</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={filters.amount}
+              onChange={(e) => updateField("amount", e.target.value)}
+            />
+          </div>
+        )}
+
+        {visibleFilters.createdFrom && (
+          <div className="f-item">
+            <label>Yaratilgan sanadan</label>
+            <input
+              type="date"
+              value={filters.createdFrom}
+              onChange={(e) => updateField("createdFrom", e.target.value)}
+            />
+          </div>
+        )}
+
+        {visibleFilters.createdTo && (
+          <div className="f-item">
+            <label>Yaratilgan sanagacha</label>
+            <input
+              type="date"
+              value={filters.createdTo}
+              onChange={(e) => updateField("createdTo", e.target.value)}
+            />
+          </div>
+        )}
+
+      </div>
+
+          {/* YANGILANGAN TUGMALAR */}
+          <div className="filter-actions">
+            <button 
+              className="btn text-white px-4 fw-medium" 
+              style={{ backgroundColor: '#F27A21', border: 'none' }} 
+              onClick={handleApplyFilter} 
+            >
+              Filter
+            </button>
+
+            <button 
+              className="btn btn-light border px-4 fw-medium text-muted" 
+              onClick={clearFilters}
+            >
+              Tozalash
+            </button>
+          </div>
+
+
+      {/* TABLE */}
+      <div className="table-responsive card border-0 shadow-sm">
+        <table className="table table-hover align-middle mb-0" style={{ fontSize: '14px' }}>
+          <thead className="bg-light text-muted">
+            <tr>
+              <th className="fw-medium py-3 px-4 border-0">Sana</th>
+              <th className="fw-medium py-3 border-0">Talaba ismi</th>
+              <th className="fw-medium py-3 border-0">Sum</th>
+              <th className="fw-medium py-3 border-0">To'lov turi</th>
+              <th className="fw-medium py-3 border-0">O'qituvchi</th>
+              <th className="fw-medium py-3 border-0">Izoh</th>
+              <th className="fw-medium py-3 border-0">Xodim</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((p) => (
+              <tr
+                key={p.id}
+                onClick={() => setSelectedStudent({ name: p.student, date: p.date, sum: p.sum, group: p.note, teacher: p.teacher })}
+                style={{ cursor: "pointer" }}
+              >
+                <td className="px-4 text-muted">{p.date}</td>
+                <td className="fw-medium text-dark">{p.student}</td>
+                <td className="text-success fw-bold">
+                  {p.sum.toLocaleString()} {p.currency}
+                </td>
+                <td className="text-muted">{p.type}</td>
+                <td className="text-primary">{p.teacher}</td>
+                <td><span className="badge bg-light text-secondary border">{p.note}</span></td>
+                <td>
+                  <div className="text-dark">{p.staff}</div>
+                  <div className="small text-muted" style={{ fontSize: '11px' }}>{p.time}</div>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan="7" className="text-center py-5 text-muted">Hech qanday ma'lumot topilmadi.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
       <Outlet />
     </div>
