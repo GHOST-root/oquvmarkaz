@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import StudentDashboard from "./StudentDashboard";
 import "./Tolovlar.css";
 import { Line } from "react-chartjs-2";
 import { Outlet } from "react-router-dom";
+import Profile from "../students/Profile";
 
 import {
   Chart as ChartJS,
@@ -157,9 +157,15 @@ export default function Tolovlar() {
     return { totalSum, profit: totalSum };
   }, [filtered]);
 
-  if (selectedStudent) {
-    return <StudentDashboard student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
-  }
+  useEffect(() => {
+    if (selectedStudent) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => (document.body.style.overflow = "auto");
+  }, [selectedStudent]);
 
   return (
     <div className="container-fluid my-4 tolovlar-page px-4">
@@ -428,7 +434,7 @@ export default function Tolovlar() {
             {filtered.map((p) => (
               <tr
                 key={p.id}
-                onClick={() => setSelectedStudent({ name: p.student, date: p.date, sum: p.sum, group: p.note, teacher: p.teacher })}
+                onClick={() => setSelectedStudent(p)}
                 style={{ cursor: "pointer" }}
               >
                 <td className="px-4 text-muted">{p.date}</td>
@@ -454,6 +460,16 @@ export default function Tolovlar() {
         </table>
       </div>
       <Outlet />
+
+      {selectedStudent && (
+        <div className="profile-fullscreen">
+          <Profile
+            student={selectedStudent}
+            onClose={() => setSelectedStudent(null)}
+          />
+        </div>
+      )}
+
     </div>
   );
 }

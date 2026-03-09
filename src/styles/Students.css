@@ -30,3 +30,7 @@
 .filter-grid-2 select:focus{
   border-color:#3B82F6;
 }
+
+.dropdwn{
+  padding: 10px;
+}

@@ -267,3 +267,25 @@
   overflow: visible !important;
   z-index: auto !important;
 }
+
+/*  */
+
+.profile-close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+
+  border: none;
+  background: rgba(0,0,0,0.05);
+
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.profile-close:hover {
+  background: rgba(0,0,0,0.1);
+}

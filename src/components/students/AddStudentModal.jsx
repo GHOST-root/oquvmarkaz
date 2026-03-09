@@ -97,7 +97,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
-      <div className="modal-container bg-white rounded-3 shadow" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="modal-container bg-white rounded-3 shadow" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '100vh' }}>
         
         <div className="modal-header px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
           <h5 className="m-0 fw-semibold">Yangi foydalanuvchi qo'shish</h5>

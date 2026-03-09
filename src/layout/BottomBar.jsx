@@ -9,7 +9,7 @@ const bottomItems = [
 
 function BottomBar() {
   return (
-    <div className="fixed-bottom bg-dark text-white border-top">
+    <div className="fixed-bottom d-none bg-dark text-white border-top">
       <div className="d-flex justify-content-around py-2">
         {bottomItems.map((item) => (
           <NavLink

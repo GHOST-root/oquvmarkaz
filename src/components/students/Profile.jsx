@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Profile.css';
 import EditStudentModal from './EditStudentModal';
 import PaymentModal from './PaymentModal';
@@ -6,11 +6,11 @@ import ReceiptModal from './ReceiptModal';
 import AddGroupModal from './AddGroupModal';
 import SmsModal from './SmsModal';
 
-const Profile = () => {
+const Profile = ({ id, student: externalStudent, onClose }) => {
   const [activeTab, setActiveTab] = useState('guruhlar');
   const [receiptPayment, setReceiptPayment] = useState(null); // Chek uchun state
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-  
+
   // --- SMS TARIXI STATI ---
   const [smsList, setSmsList] = useState([
     {
@@ -51,7 +51,7 @@ const Profile = () => {
   };
 
   // --- TALABA MA'LUMOTI ---
-  const [student, setStudent] = useState({
+  const defaultStudent = {
     id: 1363191,
     name: 'Bekzod Saydaliyev',
     phone: '99 826 46 43',
@@ -61,7 +61,9 @@ const Profile = () => {
     teacher: "Azimjon Ro'ziyev",
     date: '08.05.2025',
     note: 'Eslatma mavjud emas'
-  });
+  };
+
+  const [student, setStudent] = useState(null);
 
   // --- TO'LOVLAR TARIXI STATI ---
   const [paymentsList, setPaymentsList] = useState([
@@ -143,8 +145,43 @@ const Profile = () => {
     showToast(`Talaba ${newGroupName} guruhiga qo'shildi!`); // Xabarnoma
   };
 
+  useEffect(() => {
+    if (externalStudent) {
+      setStudent(prev => ({ ...prev, ...externalStudent }));
+    }
+  }, [externalStudent]);
+
+    useEffect(() => {
+    if (!id) return;
+
+    const loadStudent = async () => {
+      try {
+        const res = await fetch(`/api/students/${id}`);
+        const data = await res.json();
+        setStudent(data);
+      } catch (err) {
+        console.error("Student yuklanmadi:", err);
+      }
+    };
+
+    loadStudent();
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const found = paymentsMockStudents.find(s => s.id === id);
+    setStudent(found);
+  }, [id]);
+
+  if (!student) return <div style={{padding:20}}>Yuklanmoqda...</div>;
+
   return (
     <div className="profile-page-bg">
+
+      <button className="profile-close" onClick={onClose}>
+        ×
+      </button>
       
       {/* Yashil Xabarnoma (Toast) */}
       {toast.show && (
@@ -456,6 +493,12 @@ const Profile = () => {
         onSuccess={confirmSendSms} 
         selectedCount={1} 
       />
+
+      {onClose && (
+        <button className="profile-close" onClick={onClose}>
+          ×
+        </button>
+      )}
 
     </div>
   );

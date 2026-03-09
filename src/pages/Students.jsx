@@ -26,6 +26,17 @@ const Students = () => {
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
 
   // --- Filtrlar va Saralash (Sorting) holati ---
+  const formatBalance = (amount) => {
+    const sign = amount < 0 ? "-" : "";
+    const abs = Math.abs(amount);
+
+    if (abs < 1000) return sign + abs;
+
+    const rounded = Math.floor(abs / 1000) * 1000;
+
+    return sign + rounded.toLocaleString("en-US").replace(/,/g, ".");
+  };
+
   const [filters, setFilters] = useState({
     search: '', course: '', status: '', finance: '', tag: '', extraId: '', startDate: '', endDate: ''
   });
@@ -365,7 +376,19 @@ const Students = () => {
                 <td><span className="badge-gray" style={{display: 'inline-block', marginBottom: '4px'}}>{student.groups}</span> <br/> {student.time}</td>
                 <td>{student.teacher}</td>
                 <td className="text-gray" style={{ whiteSpace: 'pre-line' }}>{student.date}</td>
-                <td><span className={student.balance < 0 ? "badge bg-danger text-white rounded-pill" : "badge bg-success text-white rounded-pill"}>{student.balance}</span></td>
+
+                <td>
+                  <span
+                    className={
+                      student.balance < 0
+                        ? "badge bg-danger text-white rounded-pill"
+                        : "badge bg-success text-white rounded-pill"
+                    }
+                  >
+                    {formatBalance(student.balance)}
+                  </span>
+                </td>
+
                 <td><i className="fa-solid fa-coins text-warning me-1"></i> {student.coins}</td>
                 <td className="text-gray" style={{fontSize: '12px'}}>{student.note}</td>
                 <td className="action-cell" style={{ position: 'relative' }}>
@@ -380,7 +403,7 @@ const Students = () => {
 
         {/* Uchta nuqta menyusi */}
         {activeDropdown && currentStudent && (
-          <div style={{position: 'absolute', top: dropdownPosition.top, left: dropdownPosition.left, background: 'white', border: '1px solid #eaeaea', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', borderRadius: '6px', minWidth: '140px', zIndex: 9999}} onClick={(e) => e.stopPropagation()}>
+          <div className='dropdwn' style={{position: 'absolute', top: dropdownPosition.top, left: dropdownPosition.left, background: 'white', border: '1px solid #eaeaea', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', borderRadius: '6px', minWidth: '140px', zIndex: 9999}} onClick={(e) => e.stopPropagation()}>
             <button className="dropdown-item" onClick={() => { handleEdit(currentStudent); setActiveDropdown(null); }}><i className="fa-solid fa-pen me-2"></i> Tahrirlash</button>
             <button className="dropdown-item" onClick={() => { handlePayment(currentStudent); setActiveDropdown(null); }}><i className="fa-solid fa-money-bill me-2"></i> To'lov</button>
             <button className="dropdown-item delete text-danger" onClick={() => { handleDelete(currentStudent); setActiveDropdown(null); }}><i className="fa-solid fa-trash me-2"></i> O'chirish</button>

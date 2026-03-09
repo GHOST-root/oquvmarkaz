@@ -31,6 +31,18 @@ function Qarizdorlar() {
   const [davrSelect, setDavrSelect] = useState("");
   const [davrMin, setDavrMin] = useState("");
   const [davrMax, setDavrMax] = useState("");
+
+  const formatBalance = (amount) => {
+    const sign = amount < 0 ? "-" : "";
+    const abs = Math.abs(amount);
+
+    if (abs < 1000) return sign + abs;
+
+    const rounded = Math.floor(abs / 1000) * 1000;
+
+    return sign + rounded.toLocaleString("en-US").replace(/,/g, ".");
+  };
+
   // const [iconsIntut, setIconsIntut] = useState([]);
   useEffect(() => {
     axios
@@ -207,24 +219,16 @@ function Qarizdorlar() {
             md="auto"
             className="  d-flex    align-items-center  flex-column "
           >
-            <p> Yangi xodim qo'shish </p>
-            <Link to="../search" relative="path">
-              <Button type="submit" variant="primary">
-                Qo'shish
-              </Button>
-            </Link>
+            
           </Col>
         </Row>
       </Card>
       <Card className="mx-4 p-3">
         <Row className="align-items-center justify-content-between">
           <Col md="auto">
-            <h5 className="mb-0">Jami balans: {jamiBalans} so'm</h5>
-          </Col>
-          <Col md="auto">
-            <Link to={`search`}>
-              <FaCirclePlus size={24} />
-            </Link>
+            <h5 className="mb-0">
+              Jami balans: {formatBalance(jamiBalans)} so'm
+            </h5>
           </Col>
         </Row>
       </Card>
@@ -232,13 +236,9 @@ function Qarizdorlar() {
       <Card className="mx-4 my-3 p-3">
         <Row className="align-items-center justify-content-between">
           <Col md="auto">
-            <h5 className="mb-0">Davr bo‘yicha jami: {jamiDavr} so'm</h5>
-          </Col>
-
-          <Col md="auto">
-            <Link to={`search`}>
-              <FaCirclePlus size={24} />
-            </Link>
+            <h5 className="mb-0">
+              Davr bo‘yicha jami: {formatBalance(jamiDavr)} so'm
+            </h5>
           </Col>
         </Row>
       </Card>

@@ -176,3 +176,24 @@
 .filter-actions button{
   height: 40px;
 }
+
+/*  */
+
+.profile-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+  overflow: auto;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(16px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
