@@ -2,22 +2,62 @@
   padding: 24px;
   background-color: #F8F9FA;
   min-height: 100vh;
-  /* overflow-x: hidden; */
+  
+  /* YAGONA TO'G'RI YECHIM: Ekranni cho'zilib ketishdan saqlaydi */
+  width: 100%;
+  min-width: 0; 
+  box-sizing: border-box;
+}
+
+/* Grafik va Jadval kartalari */
+.dashboard-card {
+  background: white;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  
+  /* YAGONA TO'G'RI YECHIM: Timetable faqat shu kartaning ichida scroll bo'ladi */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* 8 ta statistika kartalari uchun maxsus Grid */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 16px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 15px; /* Kartalar orasidagi masofa */
   margin-bottom: 24px;
 }
 
-@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1400px) { 
+  .stats-grid { 
+    flex-wrap: wrap; 
+  }
+  .stat-card { 
+    /* Ekranga sig'maganda 4 tadan (25%) qilib bo'lish */
+    flex: 1 1 calc(25% - 15px); 
+  }
+}
+
+@media (max-width: 768px) { 
+  .stat-card { 
+    /* Mobil telefonda 2 tadan (50%) qilib bo'lish */
+    flex: 1 1 calc(50% - 15px); 
+  }
+}
 
 /* Statistika kartasi dizayni */
 .stat-card {
+  /* Eng asosiy qoida: 100% ni teng 8 ga bo'lish (har biriga ~12.5% dan tushadi) */
+  flex: 1 1 0%; 
+  width: 100%;
+  min-width: 0; /* Yozuv uzun bo'lsa ham kartani toshirib yubormasligi uchun */
+  
+  /* Qolgan dizayn elementlari (O'zingiznikilar) */
   background: #ffffff;
   border: 1px solid #eaeaea;
   border-radius: 8px;

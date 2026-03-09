@@ -163,7 +163,7 @@ const Timetable = () => {
   };
 
   return (
-    <div className="dashboard-card mb-4" style={{ userSelect: 'none', width: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
+    <div className="dashboard-card mb-4" style={{ userSelect: 'none', width: '100%', overflow: 'hidden', boxSizing: 'border-box', maxWidth: 'calc(100vw - 150px)' }}>
       
       <style>{`
         .hide-scrollbars::-webkit-scrollbar { display: none; }

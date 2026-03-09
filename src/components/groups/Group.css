@@ -1,9 +1,4 @@
-/* ===== GENERAL LAYOUT ===== */
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+
   .App{
     display: flex;
     /* justify-content: space-around; */
@@ -22,6 +17,8 @@
   .content {
     flex: 1;
   }
+
+
   
   /* FILTERS */
   .filters select,
@@ -57,13 +54,7 @@
     margin: 0;
   }
 
-  .form-control{
-    min-width: 500px !important;
-  }
-  
-  .input-group{
-    width: fit-content !important;
-  }
+
 
   .table-responsive table {
     min-width: 100%;
@@ -271,4 +262,3 @@
     padding-left: 0.25rem;
     padding-right: 0.25rem;
   }
-  

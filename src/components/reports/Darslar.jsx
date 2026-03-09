@@ -1,262 +1,276 @@
 import React, { useState, useMemo, useEffect } from "react";
-import axios from "axios";
-import './reports.css'
-import './darslar.css'
+import './darslar.css';
 
-// =====================
-// Statistikani hisoblash
-// =====================
-const calculateStats = (students) => {
-  // HIMOYA: students har doim array bo‘lsin
-  if (!Array.isArray(students)) students = [];
+// --- MOCK BAZA (Asl ma'lumotlar bazasi) ---
+// Har bir talabaning "attendance" obyektida sanalar bo'yicha "present" (bor), "absent" (yo'q) kabi qiymatlar saqlanadi.
+const mockStudentsData = [
+  { id: 1, ism: "Saidahmad", holati: "Aktiv", guruh: "1-guruh", filial: "itbooster", attendance: { "2025-05-10": "present", "2025-05-11": "none" } },
+  { id: 2, ism: "Behruzbek", holati: "Aktiv", guruh: "Roboto texnika #1 SJ", filial: "itbooster", attendance: { "2025-05-10": "absent" } },
+  { id: 3, ism: "Aniken Skywalker", holati: "Aktiv", guruh: "Roboto texnika #1 SJ", filial: "itbooster", attendance: { "2025-05-10": "none", "2025-05-11": "none" } }, // Belgilanmagan
+  { id: 4, ism: "Javohir", holati: "Muzlatilgan", guruh: "BA Front-end #2", filial: "itbooster", attendance: { "2025-05-10": "present", "2025-05-12": "present" } },
+  { id: 5, ism: "Aziza", holati: "Demo", guruh: "1-guruh", filial: "itbooster", attendance: { "2025-05-12": "absent" } }
+];
 
-  const kelganlar = students.filter((s) => s.kelgan).length;
-  const kelmaganlar = students.filter((s) => !s.kelgan).length;
+export default function Darslar() {
+  const [allStudents, setAllStudents] = useState([]);
+  
+  // 1. INPUT DAGI FILTRLAR (Faqat yozilayotgan vaqtda turadi)
+  const [filterInputs, setFilterInputs] = useState({
+    dateFrom: "2025-05-01",
+    dateTo: "2025-05-31",
+    filial: "itbooster",
+    guruh: ""
+  });
 
-  return {
-    mainStats: [
-      { label: "Kelgan talabalar (eng kami bir marta)", count: kelganlar, filterKey: "Kelgan" },
-      { label: "Kelmagan (martadan ko'p)", count: kelmaganlar, filterKey: "Kelmagan" },
-      { label: "Davomat belgilanmagan", count: 0, filterKey: "Belgilanmagan" },
-      { label: "Barchasi", count: students.length, filterKey: "Barchasi" },
-    ],
-    statusStats: [
-      { label: "Aktiv", count: students.filter((s) => s.holati === "Aktiv").length, filterKey: "Aktiv" },
-      { label: "Demo", count: students.filter((s) => s.holati === "Demo").length, filterKey: "Demo" },
-      { label: "Muzlatilgan", count: students.filter((s) => s.holati === "Muzlatilgan").length, filterKey: "Muzlatilgan" },
-      { label: "Barchasi", count: students.length, filterKey: "BarchasiTotal" },
-    ],
-  };
-};
+  // 2. ASOSIY FILTRLAR (Faqat "Filtr" tugmasi bosilganda ishlaydi)
+  const [appliedFilters, setAppliedFilters] = useState({
+    dateFrom: "2025-05-01",
+    dateTo: "2025-05-31",
+    filial: "itbooster",
+    guruh: ""
+  });
 
-// =====================
-// Component
-// =====================
-const Darslar = () => {
-  const [activeFilter, setActiveFilter] = useState("Barchasi");
-  const [allStudents, setAllStudent] = useState([]);
-  const [dateFrom, setDateFrom] = useState("2025-10-17");
-  const [dateTo, setDateTo] = useState("2025-10-17");
-  const [filial, setFilial] = useState("itbooster");
-  const [guruh, setGuruh] = useState("");
+  // 3. STATISTIKADAN TANLANGAN FILTR (Masalan, faqat "Kelgan"larni ko'rish)
+  const [activeStatFilter, setActiveStatFilter] = useState("Barchasi");
 
-  // STATISTIKA
-  const stats = useMemo(() => calculateStats(allStudents), [allStudents]);
-
-  // DATA FETCH
+  // Komponent yuklanganda bazani olish (Hozircha Mock ishlatamiz)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://hisobot.pythonanywhere.com/accounts/"
-        );
-
-        // 🔴 MUAMMO SHU YERDA EDI
-        // API array yoki object qaytarishidan qat'i nazar
-        // allStudents HAR DOIM ARRAY bo‘ladi
-        const studentsData = Array.isArray(response.data)
-          ? response.data
-          : response.data?.results || [];
-
-        setAllStudent(studentsData);
-      } catch (error) {
-        console.error("Axios fetch error:", error);
-        setAllStudent([]); // xavfsizlik
-      }
-    };
-
-    fetchData();
+    // API ni shu yerda chaqirasiz. Hozircha Local / Mock ma'lumot yuklaymiz.
+    setAllStudents(mockStudentsData);
   }, []);
 
-  const handleFilterClick = (key) => {
-    setActiveFilter(key);
-  };
-
-  const handleClearFilters = () => {
-    setDateFrom("2025-10-17");
-    setDateTo("2025-10-17");
-    setFilial("itbooster");
-    setGuruh("");
-    setActiveFilter("Barchasi");
-  };
-
-  // FILTERED STUDENTS
-  const filteredStudents = useMemo(() => {
-    let filtered = Array.isArray(allStudents) ? allStudents : [];
-
-    if (guruh) {
-      filtered = filtered.filter((s) => s.guruh === guruh);
+  // --- FILTRLASH VA DAVOMATNI HISABLASH MANTIG'I ---
+  const processedData = useMemo(() => {
+    // 1. Avval filial va guruh bo'yicha talabalarni ajratib olamiz
+    let baseData = allStudents.filter(s => s.filial === appliedFilters.filial);
+    if (appliedFilters.guruh) {
+      baseData = baseData.filter(s => s.guruh === appliedFilters.guruh);
     }
 
-    if (activeFilter === "Kelgan") return filtered.filter((s) => s.kelgan);
-    if (activeFilter === "Kelmagan") return filtered.filter((s) => !s.kelgan);
-    if (activeFilter === "Belgilanmagan") return [];
-    if (activeFilter === "Barchasi" || activeFilter === "BarchasiTotal") return filtered;
+    const start = new Date(appliedFilters.dateFrom).getTime();
+    const end = new Date(appliedFilters.dateTo).getTime();
 
-    return filtered.filter((s) => s.holati === activeFilter);
-  }, [activeFilter, guruh, allStudents]);
+    // 2. Har bir talabaning tanlangan sanalar oralig'idagi holatini hisoblaymiz
+    const enrichedData = baseData.map(student => {
+      let presentCount = 0;
+      let absentCount = 0;
+      let totalRecordsInRange = 0;
+      let squares = []; // Jadvalga to'rtburchak chizish uchun
+
+      if (student.attendance) {
+        Object.entries(student.attendance).forEach(([dateStr, status]) => {
+          const dTime = new Date(dateStr).getTime();
+          // Sana oraliqqa tushadimi?
+          if (dTime >= start && dTime <= end) {
+            totalRecordsInRange++;
+            squares.push(status);
+            if (status === "present") presentCount++;
+            if (status === "absent") absentCount++;
+          }
+        });
+      }
+
+      // Talaba guruhining (Kelgan, Kelmagan, Belgilanmagan) ekanligini aniqlash
+      let attCategory = "Belgilanmagan"; 
+      if (presentCount > 0) {
+        attCategory = "Kelgan";
+      } else if (absentCount > 0 && presentCount === 0) {
+        attCategory = "Kelmagan";
+      } else if (totalRecordsInRange > 0 && presentCount === 0 && absentCount === 0) {
+        // yozuv bor, lekin faqat "none" bo'lsa
+        attCategory = "Belgilanmagan";
+      }
+
+      return { ...student, attCategory, squares };
+    });
+
+    return enrichedData;
+  }, [allStudents, appliedFilters]);
+
+
+  // --- STATISTIKANI YIG'ISH ---
+  const stats = useMemo(() => {
+    return {
+      kelgan: processedData.filter(s => s.attCategory === "Kelgan").length,
+      kelmagan: processedData.filter(s => s.attCategory === "Kelmagan").length,
+      belgilanmagan: processedData.filter(s => s.attCategory === "Belgilanmagan").length,
+      jami: processedData.length,
+
+      aktiv: processedData.filter(s => s.holati === "Aktiv").length,
+      demo: processedData.filter(s => s.holati === "Demo").length,
+      muzlatilgan: processedData.filter(s => s.holati === "Muzlatilgan").length
+    };
+  }, [processedData]);
+
+  // --- STATISTIKA BO'YICHA YAKUNIY RO'YXAT (Jadval uchun) ---
+  const finalTableData = useMemo(() => {
+    if (activeStatFilter === "Barchasi") return processedData;
+    if (["Kelgan", "Kelmagan", "Belgilanmagan"].includes(activeStatFilter)) {
+      return processedData.filter(s => s.attCategory === activeStatFilter);
+    }
+    if (["Aktiv", "Demo", "Muzlatilgan"].includes(activeStatFilter)) {
+      return processedData.filter(s => s.holati === activeStatFilter);
+    }
+    return processedData;
+  }, [processedData, activeStatFilter]);
+
+
+  // --- AMALLAR (TUGMALAR) ---
+  const applyFilter = () => {
+    setAppliedFilters(filterInputs);
+    setActiveStatFilter("Barchasi"); // Filtr bosilganda statistika tanlovini tozalaymiz
+  };
+
+  const clearFilter = () => {
+    const defaultF = { dateFrom: "2025-05-01", dateTo: "2025-05-31", filial: "itbooster", guruh: "" };
+    setFilterInputs(defaultF);
+    setAppliedFilters(defaultF);
+    setActiveStatFilter("Barchasi");
+  };
 
   return (
-    <div className="attendance-container">
-   
+    <div className="darslar-container">
+      <div className="darslar-layout">
+        
+        {/* CHAP TOMON: HISOBOTLAR VA JADVAL */}
+        <div className="darslar-main">
+          
+          <div className="d-card">
+            <h2 className="d-card-title">Darsga kelish hisobotlari</h2>
+            
+            {/* Statistika Bloklari (2 ta ustunli) */}
+            <div className="stats-wrapper">
+              
+              {/* 1-ustun: Davomat statistikasi */}
+              <div className="stats-col">
+                <table className="stats-table">
+                  <tbody>
+                    <tr className={activeStatFilter === "Kelgan" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Kelgan")}>
+                      <td>Kelgan talabalar (eng kami bir marta)</td>
+                      <td className="stat-count">{stats.kelgan}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Kelmagan" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Kelmagan")}>
+                      <td>Kelmagan (martadan ko'p)</td>
+                      <td className="stat-count">{stats.kelmagan}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Belgilanmagan" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Belgilanmagan")}>
+                      <td>Davomat belgilanmagan</td>
+                      <td className="stat-count">{stats.belgilanmagan}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Barchasi" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Barchasi")}>
+                      <td>Barchasi</td>
+                      <td className="stat-count">{stats.jami}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-      <div className="main-content">
-        <div className="report-section">
-          <h1 className="report-title">Darsga kelish hisobotlari</h1>
-
-          <div className="stats-grid d-flex flex-row justify-content-around">
-           <div className="stats-table-wrap">
-
-              <table className="stats-table">
-                <tbody className="tablebody">
-
-                  {stats.mainStats.map((left, i) => {
-                    const right = stats.statusStats[i];
-
-                    return (
-                      <tr key={left.filterKey}>
-
-                        {/* Chap label */}
-                        <td
-                          className={`label ${
-                            activeFilter === left.filterKey ? "active" : ""
-                          }`}
-                          onClick={() => handleFilterClick(left.filterKey)}
-                        >
-                          {left.label}
-                        </td>
-
-                        {/* Chap count */}
-                        <td
-                          className={`count ${
-                            activeFilter === left.filterKey ? "active" : ""
-                          }`}
-                          onClick={() => handleFilterClick(left.filterKey)}
-                        >
-                          {left.count}
-                        </td>
-
-                        {/* O‘ng label */}
-                        <td
-                          className={`label ${
-                            activeFilter === right?.filterKey ? "active" : ""
-                          }`}
-                          onClick={() => handleFilterClick(right?.filterKey)}
-                        >
-                          {right?.label}
-                        </td>
-
-                        {/* O‘ng count */}
-                        <td
-                          className={`count ${
-                            activeFilter === right?.filterKey ? "active" : ""
-                          }`}
-                          onClick={() => handleFilterClick(right?.filterKey)}
-                        >
-                          {right?.count}
-                        </td>
-
-                      </tr>
-                    );
-                  })}
-
-                </tbody>
-              </table>
+              {/* 2-ustun: Holat statistikasi */}
+              <div className="stats-col border-start">
+                <table className="stats-table">
+                  <tbody>
+                    <tr className={activeStatFilter === "Aktiv" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Aktiv")}>
+                      <td>Aktiv</td>
+                      <td className="stat-count">{stats.aktiv}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Demo" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Demo")}>
+                      <td>Demo</td>
+                      <td className="stat-count">{stats.demo}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Muzlatilgan" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Muzlatilgan")}>
+                      <td>Muzlatilgan</td>
+                      <td className="stat-count">{stats.muzlatilgan}</td>
+                    </tr>
+                    <tr className={activeStatFilter === "Barchasi" ? "active-stat" : ""} onClick={() => setActiveStatFilter("Barchasi")}>
+                      <td>Barchasi</td>
+                      <td className="stat-count">{stats.jami}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
             </div>
           </div>
 
-          {/* TABLE */}
-          <div className="table-wrapper">
-            <table className="students-table">
+          {/* ASOSIY JADVAL */}
+          <div className="d-card">
+            <table className="table data-table mb-0 w-100">
               <thead>
                 <tr>
-                  <th>Ism</th>
-                  <th>Holati</th>
-                  <th>Guruh</th>
-                  <th>Davomat</th>
+                  <th style={{width: '30%'}}>Ism <i className="fa-solid fa-sort"></i></th>
+                  <th style={{width: '25%'}}>Holati <i className="fa-solid fa-sort"></i></th>
+                  <th style={{width: '25%'}}>Guruh <i className="fa-solid fa-sort"></i></th>
+                  <th style={{width: '20%'}}>Davomat <i className="fa-solid fa-sort"></i></th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((student, index) => (
-                  <tr key={index}>
-                    <td>{student.ism}</td>
-                    <td>{student.holati}</td>
-                    <td>{student.guruh}</td>
-                    <td>
-                      <span
-                        className={`attendance-indicator ${
-                          student.kelgan ? "present" : "absent"
-                        }`}
-                      />
-                    </td>
-                  </tr>
-                ))}
-
-                {filteredStudents.length === 0 && (
-                  <tr>
-                    <td colSpan="4" className="no-data">
-                      Ma'lumot topilmadi
-                    </td>
-                  </tr>
+                {finalTableData.length === 0 ? (
+                  <tr><td colSpan="4" className="text-center py-5 text-muted">Ushbu shartlarga mos ma'lumot topilmadi</td></tr>
+                ) : (
+                  finalTableData.map(student => (
+                    <tr key={student.id}>
+                      <td className="student-name">{student.ism}</td>
+                      <td><span className="student-status">{student.guruh}: {student.holati}</span></td>
+                      <td>{student.guruh}</td>
+                      <td>
+                        <div className="att-squares-container">
+                          {student.squares.length === 0 && <span className="text-muted small">Yo'q</span>}
+                          {student.squares.map((status, i) => (
+                            <span key={i} className={`att-square ${status}`} title={status}></span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
+
         </div>
 
-        {/* FILTER */}
-        <div className="filter-section">
-          <h2 className="filter-title">Filtr</h2>
+        {/* O'NG TOMON: FILTR PANEL */}
+        <div className="darslar-sidebar">
+          <div className="d-card">
+            <h3 className="filter-title">Filtr</h3>
+            
+            <div className="filter-group">
+              <label>Sanadan boshlab</label>
+              <input type="date" className="form-control" value={filterInputs.dateFrom} onChange={(e) => setFilterInputs({...filterInputs, dateFrom: e.target.value})} />
+            </div>
 
-          <div className="filter-group">
-            <label>Sanadan boshlab</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
-          </div>
+            <div className="filter-group">
+              <label>Sana bo'yicha</label>
+              <input type="date" className="form-control" value={filterInputs.dateTo} onChange={(e) => setFilterInputs({...filterInputs, dateTo: e.target.value})} />
+            </div>
 
-          <div className="filter-group">
-            <label>Sana bo‘yicha</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
-          </div>
+            <div className="filter-group">
+              <label>Filiallar</label>
+              <select className="form-select" value={filterInputs.filial} onChange={(e) => setFilterInputs({...filterInputs, filial: e.target.value})}>
+                <option value="itbooster">Itbooster</option>
+                <option value="CRM2">CRM2</option>
+              </select>
+            </div>
 
-          <div className="filter-group">
-            <label>Filiallar</label>
-            <select value={filial} onChange={(e) => setFilial(e.target.value)}>
-              <option value="itbooster">Itbooster</option>
-            </select>
-          </div>
+            <div className="filter-group">
+              <label>Guruh</label>
+              <select className="form-select" value={filterInputs.guruh} onChange={(e) => setFilterInputs({...filterInputs, guruh: e.target.value})}>
+                <option value="">Barchasi</option>
+                <option value="1-guruh">1-guruh</option>
+                <option value="Roboto texnika #1 SJ">Roboto texnika #1 SJ</option>
+                <option value="BA Front-end #2">BA Front-end #2</option>
+              </select>
+            </div>
 
-          <div className="filter-group">
-            <label>Guruh</label>
-            <select value={guruh} onChange={(e) => setGuruh(e.target.value)}>
-              <option value="">Barchasi</option>
-              <option value="FrontEnd">FrontEnd</option>
-              <option value="BackEnd">BackEnd</option>
-              <option value="Design">Design</option>
-            </select>
-          </div>
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <button className="btn-tozalash" onClick={clearFilter}>Tozalash</button>
+              <button className="btn-filtr" onClick={applyFilter}>Filtr</button>
+            </div>
 
-          <div className="filter-buttons">
-            <button className="filter-button primary">Filtr</button>
-            <button
-              className="filter-button secondary"
-              onClick={handleClearFilters}
-            >
-              Tozalash
-            </button>
           </div>
         </div>
+
       </div>
     </div>
   );
-};
-
-export default Darslar;
+}
