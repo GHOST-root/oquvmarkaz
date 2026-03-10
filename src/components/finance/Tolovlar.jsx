@@ -157,6 +157,74 @@ export default function Tolovlar() {
     return { totalSum, profit: totalSum };
   }, [filtered]);
 
+  // 1. SARALASH UCHUN STATE
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // 2. SARALASH MANTIG'I 
+  // (DIQQAT: "payments" degan so'z o'rniga o'zingizdagi to'lovlar bazasi / state nomini yozing)
+  const sortedPayments = useMemo(() => {
+    let sortableItems = [...payments]; 
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        let aVal = a[sortConfig.key] || '';
+        let bVal = b[sortConfig.key] || '';
+
+        // Agar summa bo'yicha saralansa, raqam sifatida hisoblaymiz
+        if (sortConfig.key === 'amount') {
+          aVal = Number(aVal);
+          bVal = Number(bVal);
+        }
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [payments, sortConfig]); // "payments" ni o'zingiznikiga almashtiring
+
+  // 3. TUGMA BOSILGANDA ISHLAYDIGAN FUNKSIYA
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+    setSortConfig({ key, direction });
+  };
+
+  // 4. IKONKALARNI CHIZISH UCHUN
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return "fa-solid fa-sort ms-1 text-muted opacity-25";
+    return sortConfig.direction === 'asc' ? "fa-solid fa-sort-up ms-1 text-primary" : "fa-solid fa-sort-down ms-1 text-primary";
+  };
+
+  // To'lov ustiga bosganda talabani bazadan topib beruvchi funksiya
+  // To'lov ustiga bosganda talabani bazadan topib beruvchi funksiya
+  const handleOpenProfile = (payment) => {
+    const allStudents = JSON.parse(localStorage.getItem('studentsList') || '[]');
+    
+    // Talabani ism bo'yicha qidiramiz (Katta-kichik harf va bo'shliqlarni hisobga olmaymiz)
+    const foundStudent = allStudents.find(s => 
+      s.name?.trim().toLowerCase() === payment.student?.trim().toLowerCase()
+    );
+    
+    if (foundStudent) {
+      setSelectedStudent(foundStudent); // Topilsa haqiqiy profilni ochadi
+    } else {
+      // Agar bazada topilmasa (Fake data to'qnashuvi sababli), alert o'rniga vaqtinchalik profil ochamiz
+      const tempStudent = {
+        id: `temp-${payment.id}`,
+        name: payment.student,
+        phone: "Noma'lum",
+        balance: payment.sum, // To'lagan pulini balansida ko'rsatamiz
+        coins: 0,
+        groups: payment.note || "Noma'lum",
+        teacher: payment.teacher || "Noma'lum",
+        date: payment.date,
+        note: "Diqqat: Bu talaba haqiqiy bazada yo'q. Vaqtinchalik profil."
+      };
+      setSelectedStudent(tempStudent);
+    }
+  };
+
   useEffect(() => {
     if (selectedStudent) {
       document.body.style.overflow = "hidden";
@@ -177,12 +245,12 @@ export default function Tolovlar() {
         <div className="col-lg-5">
           <div className="card card-stat mb-3 border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center p-4">
-              <div>
+              <div className="orovchi">
                 <div className="text-muted small fw-medium mb-1">To'lovlar miqdori:</div>
                 <h3 className="fw-bold text-dark m-0">
                   {totals.totalSum.toLocaleString()} UZS
                 </h3>
-                <div className="small text-muted mt-1">01.10.2025 — 31.10.2025</div>
+                <div className="small smtxt d-flex text-muted mt-1">01.10.2025 — 31.10.2025</div>
               </div>
               <div className="icon-stack bg-light rounded-circle d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', fontSize: '24px' }}>💰</div>
             </div>
@@ -190,12 +258,12 @@ export default function Tolovlar() {
 
           <div className="card card-stat border-0 shadow-sm">
             <div className="card-body d-flex justify-content-between align-items-center p-4">
-              <div>
+              <div className="orovchi">
                 <div className="text-muted small fw-medium mb-1">Sof foyda miqdori:</div>
                 <h3 className="fw-bold text-dark m-0">
                   {totals.profit.toLocaleString()} UZS
                 </h3>
-                <div className="small text-muted mt-1">01.10.2025 — 31.10.2025</div>
+                <div className="small smtxt text-muted mt-1">01.10.2025 — 31.10.2025</div>
               </div>
               <div className="icon-stack bg-light rounded-circle d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', fontSize: '24px' }}>💵</div>
             </div>
@@ -421,20 +489,34 @@ export default function Tolovlar() {
         <table className="table table-hover align-middle mb-0" style={{ fontSize: '14px' }}>
           <thead className="bg-light text-muted">
             <tr>
-              <th className="fw-medium py-3 px-4 border-0">Sana</th>
-              <th className="fw-medium py-3 border-0">Talaba ismi</th>
-              <th className="fw-medium py-3 border-0">Sum</th>
-              <th className="fw-medium py-3 border-0">To'lov turi</th>
-              <th className="fw-medium py-3 border-0">O'qituvchi</th>
-              <th className="fw-medium py-3 border-0">Izoh</th>
-              <th className="fw-medium py-3 border-0">Xodim</th>
+              <th className="fw-medium py-3 px-4 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('date')}>
+                Sana <i className={getSortIcon('date')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('studentName')}>
+                Talaba ismi <i className={getSortIcon('studentName')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('amount')}>
+                Sum <i className={getSortIcon('amount')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('type')}>
+                To'lov turi <i className={getSortIcon('type')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('teacher')}>
+                O'qituvchi <i className={getSortIcon('teacher')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('note')}>
+                Izoh <i className={getSortIcon('note')}></i>
+              </th>
+              <th className="fw-medium py-3 border-0" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('employee')}>
+                Xodim <i className={getSortIcon('employee')}></i>
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((p) => (
               <tr
                 key={p.id}
-                onClick={() => setSelectedStudent(p)}
+                onClick={() => handleOpenProfile(p)} /* <--- MANA SHU YER O'ZGARDI */
                 style={{ cursor: "pointer" }}
               >
                 <td className="px-4 text-muted">{p.date}</td>

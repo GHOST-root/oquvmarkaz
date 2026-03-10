@@ -13,6 +13,9 @@ import Courses from "./pages/Courses";
 import Staff from "./pages/Staff";
 import Settings from "./pages/Settings";
 
+// Timetable import qilinadi
+import Timetable from "./components/dashboard/Timetable";
+
 // Finance
 import Tolovlar from "./components/finance/Tolovlar";
 
@@ -34,7 +37,6 @@ import Holidays from "./components/settings/Holidays";
 import Leftgroup from "./components/settings/Leftgroup";
 import Profil from "./components/settings/Profil";
 import Rooms from "./components/settings/Rooms";
-
 import UmumiySozlamalar from "./components/settings/UmumiySozlamalar";
 
 // Students
@@ -82,13 +84,16 @@ function App() {
           <Route path="xonalar" element={<Rooms />} />
         </Route>
 
-          {/* Bottom Bar */}
+        {/* Bottom Bar */}
         <Route path="/blog/*" element={<Blog />} />
 
-          {/* ichki qismlar */}
+        {/* ichki qismlar */}
         <Route path="/news/*" element={<News />} />
-        
       </Routes>
+
+      {/* MUHIM: Timetable doim shu yerda, Routes'dan keyin turishi kerak! */}
+      <Timetable isGlobal={true} />
+
     </MainLayout>
   );
 }
